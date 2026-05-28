@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Obra Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#F5F4F0;--surface:#fff;--surface2:#EFEDE7;--surface3:#E8E6DF;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1A1917;--text2:#6A6860;--text3:#A9A79F;
+  --accent:#2B5741;--accent-l:#E8F2EC;--accent-t:#1C3A2B;
+  --warn:#A85500;--warn-l:#FEF2E6;
+  --danger:#B91C1C;--danger-l:#FEF2F2;
+  --info:#1A4FBF;--info-l:#EEF4FF;
+  --purple:#5B21B6;--purple-l:#F3F0FF;
+  --teal:#0D7377;--teal-l:#E6F4F5;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+.app{display:flex;min-height:100vh;}
+.sidebar{width:228px;background:var(--text);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:transform .25s;overflow-y:auto;}
+.sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.sb-logo h1{font-size:13px;font-weight:600;color:#fff;line-height:1.3;}
+.sb-logo p{font-size:11px;color:rgba(255,255,255,.38);margin-top:2px;}
+.sb-nav{padding:10px 8px;flex:1;}
+.sb-sec{font-size:9px;font-weight:600;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;padding:14px 10px 5px;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);font-size:12px;color:rgba(255,255,255,.58);cursor:pointer;transition:all .15s;margin-bottom:1px;user-select:none;}
+.sb-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+.sb-item.active{background:rgba(255,255,255,.13);color:#fff;}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;}
+.sb-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;color:rgba(255,255,255,.25);}
+.main{margin-left:228px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 26px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar h2{font-size:14px;font-weight:500;}
+.topbar-r{display:flex;align-items:center;gap:8px;}
+.mode-bar{background:var(--accent);color:#fff;padding:8px 26px;font-size:12px;display:flex;align-items:center;gap:10px;}
+.mode-bar.hidden{display:none;}
+.content{padding:24px 26px;max-width:1120px;width:100%;}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--text);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:190;}
+.overlay.show{display:block;}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;}
+.mc .ml{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:5px;}
+.mc .mv{font-size:22px;font-weight:300;color:var(--text);line-height:1;}
+.mc .ms{font-size:11px;color:var(--text3);margin-top:3px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;}
+.ch{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.ch h3{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.cb{padding:18px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.bdg{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap;display:inline-block;}
+.ok{background:var(--accent-l);color:var(--accent-t);}
+.warn{background:var(--warn-l);color:var(--warn);}
+.danger{background:var(--danger-l);color:var(--danger);}
+.info{background:var(--info-l);color:var(--info);}
+.purple{background:var(--purple-l);color:var(--purple);}
+.teal{background:var(--teal-l);color:var(--teal);}
+.neutral{background:var(--surface2);color:var(--text2);}
+.btn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:var(--rs);cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn:hover{background:var(--surface2);}
+.btn.pri{background:var(--text);color:#fff;border-color:var(--text);}
+.btn.pri:hover{background:#333;}
+.btn.sm{padding:4px 10px;font-size:11px;}
+.btn.danger{color:var(--danger);border-color:rgba(185,28,28,.2);}
+.btn.danger:hover{background:var(--danger-l);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+.fg4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+.ff{margin-bottom:10px;}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:4px;display:block;}
+input,select,textarea{width:100%;padding:8px 10px;font-size:12px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+textarea{resize:vertical;min-height:72px;}
+input[type=range]{padding:0;border:none;background:none;accent-color:var(--accent);cursor:pointer;}
+input[type=checkbox]{width:auto;accent-color:var(--accent);cursor:pointer;}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--surface2);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg);}
+.td2{color:var(--text2);font-size:11px;}
+.cl{list-style:none;}
+.cl li{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.4;}
+.cl li:last-child{border-bottom:none;}
+.cl li.done{opacity:.4;text-decoration:line-through;}
+.cl li input[type=checkbox]{margin-top:2px;flex-shrink:0;}
+.ct{flex:1;}
+.ph-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.ph-row:last-child{border-bottom:none;}
+.pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.done-dot{background:var(--accent);}
+.active-dot{background:var(--warn);}
+.pend-dot{background:var(--border2);}
+.ph-info{flex:1;}
+.ph-n{font-size:13px;font-weight:500;}
+.ph-s{font-size:11px;color:var(--text2);margin-top:1px;}
+.pb{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin:6px 0;}
+.pf{height:100%;background:var(--accent);border-radius:3px;transition:width .4s;}
+.gantt-wrap{overflow-x:auto;margin-top:8px;}
+.gantt-row{display:flex;align-items:center;gap:0;margin-bottom:3px;font-size:11px;}
+.gantt-label{width:180px;flex-shrink:0;padding:4px 8px 4px 0;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gantt-bar-wrap{flex:1;position:relative;height:22px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.gantt-bar{height:100%;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;}
+.de{background:var(--surface2);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;}
+.de-d{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
+.de-t{font-size:13px;margin-top:4px;}
+.de-tags{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;}
+.foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px;}
+.foto-item{border-radius:var(--rs);overflow:hidden;background:var(--surface2);aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
+.foto-item img{width:100%;height:100%;object-fit:cover;}
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.task-row:last-child{border-bottom:none;}
+.task-info{flex:1;}
+.task-name{font-weight:500;}
+.task-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.prancha-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.prancha-row:last-child{border-bottom:none;}
+.prancha-info{flex:1;}
+.rev-list{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+.rev-item{font-size:11px;color:var(--text2);background:var(--surface2);padding:4px 8px;border-radius:var(--rs);}
+.contato-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px;}
+.contato-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.timeline-item{display:flex;gap:14px;padding-bottom:20px;position:relative;}
+.timeline-item:last-child{padding-bottom:0;}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0;}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid var(--surface);}
+.tl-line{width:2px;background:var(--border);flex:1;margin-top:4px;}
+.tl-content{flex:1;}
+.tl-title{font-size:13px;font-weight:500;}
+.tl-date{font-size:11px;color:var(--text2);margin-top:2px;}
+.tl-desc{font-size:12px;color:var(--text2);margin-top:4px;}
+.vistoria-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.vistoria-item:last-child{border-bottom:none;}
+.empty{text-align:center;padding:36px 16px;color:var(--text3);font-size:13px;}
+.sep{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.st{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin:20px 0 8px;}
+.st:first-child{margin-top:0;}
+.rw{display:flex;align-items:center;gap:8px;}
+.rw input{flex:1;}
+.rv{font-size:12px;font-weight:500;min-width:36px;font-family:'DM Mono',monospace;}
+.rent-ok{color:var(--accent);font-weight:600;}
+.rent-bad{color:var(--danger);font-weight:600;}
+.cot-winner{background:var(--accent-l)!important;}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .hamburger{display:block;}
+  .content{padding:16px;}
+  .fg,.fg3,.fg4,.two-col{grid-template-columns:1fr;}
+  .mg{grid-template-columns:1fr 1fr;}
+}
+@media print{
+  .sidebar,.topbar,.mode-bar,.btn-row,.no-print{display:none!important;}
+  .main{margin-left:0;}
+}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+<div class="app">
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-logo"><h1 id="sb-nome">Gestão de Obra Pro</h1><p id="sb-sub">Retrofit Sobrado</p></div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Visão Geral</div>
+    <div class="sb-item active" onclick="go('painel')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Painel</div>
+    <div class="sb-item" onclick="go('timeline')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Linha do tempo</div>
+    <div class="sb-sec">Planejamento</div>
+    <div class="sb-item" onclick="go('escopo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Escopo</div>
+    <div class="sb-item" onclick="go('cronograma')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Cronograma + Gantt</div>
+    <div class="sb-item" onclick="go('tarefas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tarefas</div>
+    <div class="sb-item" onclick="go('projetos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Projetos / Pranchas</div>
+    <div class="sb-item" onclick="go('docs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Documentos</div>
+    <div class="sb-item" onclick="go('riscos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Riscos</div>
+    <div class="sb-sec">Financeiro</div>
+    <div class="sb-item" onclick="go('fornecedores')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Fornecedores</div>
+    <div class="sb-item" onclick="go('materiais')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Materiais</div>
+    <div class="sb-item" onclick="go('cotacao')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Mapa de Cotação</div>
+    <div class="sb-item" onclick="go('pagamentos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Pagamentos</div>
+    <div class="sb-item" onclick="go('fluxocaixa')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Fluxo de Caixa</div>
+    <div class="sb-item" onclick="go('medicao')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Medição Mensal</div>
+    <div class="sb-item" onclick="go('relatorio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M16 13H8M16 17H8"/></svg>Relatório Cliente</div>
+    <div class="sb-item" onclick="go('custos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Meus Custos</div>
+    <div class="sb-sec">Obra</div>
+    <div class="sb-item" onclick="go('diario')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Diário de Obra</div>
+    <div class="sb-item" onclick="go('fotos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>Galeria de Fotos</div>
+    <div class="sb-item" onclick="go('visitas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda de Visitas</div>
+    <div class="sb-item" onclick="go('contatos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Contatos</div>
+    <div class="sb-item" onclick="go('vistoria')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Vistoria de Entrega</div>
+    <div class="sb-sec">Sistema</div>
+    <div class="sb-item" onclick="go('config')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg>Configurações</div>
+  </nav>
+  <div class="sb-footer">v2.0 Pro · Obra</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="mode-bar hidden" id="mode-bar">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    Modo visualização — somente leitura
+    <button class="btn sm" style="background:rgba(255,255,255,.2);border-color:transparent;color:#fff;margin-left:auto;" onclick="setMode('edit')">Entrar como gestora</button>
+  </div>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger" onclick="toggleSB()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <h2 id="page-title">Painel</h2>
+    </div>
+    <div class="topbar-r">
+      <button class="btn sm" id="mode-btn" onclick="toggleMode()">Arq. gestora ✏️</button>
+      <button class="btn sm no-print" onclick="exportData()">Exportar</button>
+      <label class="btn sm no-print" style="cursor:pointer;">Importar<input type="file" accept=".json" style="display:none;" onchange="importData(event)"></label>
+    </div>
+  </div>
+  <div class="content" id="content">
+<!-- PAINEL -->
+<div id="p-painel" class="page">
+  <div class="mg" id="mg-painel"></div>
+  <div class="two-col">
+    <div>
+      <div class="card"><div class="ch"><h3>🔴 Ações urgentes — demolição</h3></div><div class="cb"><ul class="cl" id="cl-urgente"></ul></div></div>
+    </div>
+    <div>
+      <div class="card"><div class="ch"><h3>📅 Próxima medição</h3></div>
+        <div class="cb">
+          <p style="font-size:28px;font-weight:300;font-family:'DM Mono',monospace;" id="dias-med">—</p>
+          <p style="font-size:12px;color:var(--text2);margin-top:4px;">dias para o dia 10</p>
+          <hr class="sep"><div id="resumo-fin-painel" style="font-size:12px;"></div>
+          <div class="btn-row"><button class="btn pri sm" onclick="go('medicao')">Ir para medição</button></div>
+        </div>
+      </div>
+      <div class="card"><div class="ch"><h3>⚡ Tarefas pendentes</h3></div><div class="cb" id="painel-tarefas"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- LINHA DO TEMPO -->
+<div id="p-timeline" class="page" style="display:none;">
+  <div class="card"><div class="ch"><h3>Evolução da obra</h3><span class="bdg info">Visual para o cliente</span></div><div class="cb"><div id="timeline-list"></div></div></div>
+</div>
+
+<!-- ESCOPO -->
+<div id="p-escopo" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Adicionar grupo de escopo</h3></div>
+    <div class="cb">
+      <div class="fg">
+        <div><label class="lbl">Nome do grupo</label><input id="esc-nome" placeholder="Ex: Paisagismo, Automação..."></div>
+        <div><label class="lbl">Status inicial</label>
+          <select id="esc-status"><option value="pend">Aguardando</option><option value="active">Em andamento</option><option value="done">Concluído</option></select>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn pri" onclick="addGrupoEscopo()">Adicionar grupo</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Escopo completo</h3><span class="bdg neutral" id="escopo-count">0 grupos</span></div><div class="cb" id="escopo-body"></div></div>
+</div>
+
+<!-- CRONOGRAMA -->
+<div id="p-cronograma" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Definir datas por etapa</h3></div><div class="cb" id="cron-form"></div></div>
+  <div class="card"><div class="ch"><h3>Gráfico de Gantt</h3></div><div class="cb"><div class="gantt-wrap" id="gantt-chart"></div></div></div>
+</div>
+
+<!-- TAREFAS -->
+<div id="p-tarefas" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Nova tarefa</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Tarefa</label><input id="t-nome" placeholder="Descreva a tarefa..."></div>
+        <div><label class="lbl">Responsável</label>
+          <select id="t-resp"><option>Arq. gestora</option><option>Parceira</option><option>Mestre de obras</option><option>Empreiteiro elétrica</option><option>Empreiteiro hidráulica</option><option>Cliente</option><option>Outro</option></select>
+        </div>
+        <div><label class="lbl">Prazo</label><input id="t-prazo" type="date"></div>
+      </div>
+      <div class="fg">
+        <div><label class="lbl">Prioridade</label><select id="t-prio"><option>Alta</option><option>Média</option><option>Baixa</option></select></div>
+        <div><label class="lbl">Grupo relacionado</label>
+          <select id="t-grupo"><option value="">Geral</option><option>1 · Demolições</option><option>2 · Coberturas</option><option>3 · Elétrica</option><option>4 · Hidráulica</option><option>5 · Acabamentos</option><option>7 · Civil</option><option>Financeiro</option><option>Projetos</option></select>
+        </div>
+      </div>
+      <div class="ff"><label class="lbl">Observações</label><input id="t-obs" placeholder="Detalhes adicionais..."></div>
+      <div class="btn-row"><button class="btn pri" onclick="addTarefa()">Criar tarefa</button></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+    <button class="btn sm" onclick="filtroT('todas')" id="ft-todas">Todas</button>
+    <button class="btn sm" onclick="filtroT('pendente')" id="ft-pendente">Pendentes</button>
+    <button class="btn sm" onclick="filtroT('concluida')" id="ft-concluida">Concluídas</button>
+    <button class="btn sm" onclick="filtroT('atrasada')" id="ft-atrasada">Atrasadas</button>
+  </div>
+  <div class="card"><div class="cb" id="tarefas-list"></div></div>
+</div>
+
+<!-- PROJETOS/PRANCHAS -->
+<div id="p-projetos" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Cadastrar prancha</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Código</label><input id="pr-cod" placeholder="Ex: ARQ-01"></div>
+        <div><label class="lbl">Título</label><input id="pr-titulo" placeholder="Ex: Planta Baixa Térreo"></div>
+        <div><label class="lbl">Disciplina</label>
+          <select id="pr-disc"><option>Arquitetura</option><option>Elétrica</option><option>Hidráulica</option><option>Estrutural</option><option>Gás</option><option>Automação</option><option>Paisagismo</option><option>Outro</option></select>
+        </div>
+      </div>
+      <div class="fg3">
+        <div><label class="lbl">Escala</label><input id="pr-escala" placeholder="Ex: 1:50"></div>
+        <div><label class="lbl">Data de emissão</label><input id="pr-data" type="date"></div>
+        <div><label class="lbl">Status</label>
+          <select id="pr-status"><option>Em desenvolvimento</option><option>Emitido para aprovação</option><option>Aprovado</option><option>Em revisão</option><option>Cancelado</option></select>
+        </div>
+      </div>
+      <div class="ff"><label class="lbl">Observações</label><input id="pr-obs" placeholder="Notas sobre a prancha..."></div>
+      <div class="btn-row"><button class="btn pri" onclick="addPrancha()">Cadastrar prancha</button></div>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Total pranchas</div><div class="mv" id="pr-total">0</div></div>
+    <div class="mc"><div class="ml">Em revisão</div><div class="mv" id="pr-revisao">0</div></div>
+    <div class="mc"><div class="ml">Aprovadas</div><div class="mv" id="pr-aprovadas">0</div></div>
+    <div class="mc"><div class="ml">Adicionais gerados</div><div class="mv" id="pr-adicionais">0</div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Pranchas cadastradas</h3></div><div class="cb" id="pranchas-list"></div></div>
+</div>
+
+<!-- DOCS -->
+<div id="p-docs" class="page" style="display:none;">
+  <div class="card"><div class="ch"><h3>Documentos técnicos e legais</h3></div><div class="cb" id="docs-body"></div></div>
+</div>
+
+<!-- RISCOS -->
+<div id="p-riscos" class="page" style="display:none;">
+  <div class="card"><div class="ch"><h3>Mapa de riscos</h3></div>
+    <div class="cb">
+      <div style="display:grid;grid-template-columns:1fr 80px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);font-size:9px;font-weight:600;text-transform:uppercase;color:var(--text2);">
+        <span>Risco</span><span>Prob.</span><span>Impacto</span>
+      </div>
+      <div id="riscos-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FORNECEDORES -->
+<div id="p-fornecedores" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Cadastrar fornecedor</h3></div>
+    <div class="cb">
+      <div class="fg">
+        <div><label class="lbl">Nome / empresa</label><input id="f-nome" placeholder="Ex: Elétrica Silva Ltda"></div>
+        <div><label class="lbl">Grupo do escopo</label>
+          <select id="f-grupo"><option value="">Selecione...</option><option>1 · Demolições e Remoções</option><option>2 · Coberturas</option><option>3 · Instalações Elétricas</option><option>4 · Instalações Hidráulicas</option><option>5 · Acabamentos e Revestimentos</option><option>6 · Gesso</option><option>7 · Civil</option><option>8 · Impermeabilizações</option><option>9 · Pintura</option><option>10 · Finalizações</option><option>11 · Seguro</option><option>12 · Proteções</option><option>13 · Entulhos</option><option>Múltiplos grupos</option></select>
+        </div>
+      </div>
+      <div class="fg3">
+        <div><label class="lbl">Valor contrato (R$)</label><input id="f-valor" type="number" placeholder="0,00"></div>
+        <div><label class="lbl">Tipo</label><select id="f-tipo"><option>Empreitada (mensal medido)</option><option>Mão de obra + material</option><option>Por etapa</option><option>Global fechado</option></select></div>
+        <div><label class="lbl">Status</label><select id="f-status"><option>Em negociação</option><option>Assinado</option><option>Em execução</option><option>Concluído</option><option>Suspenso</option></select></div>
+      </div>
+      <div class="ff"><label class="lbl">Observações</label><input id="f-obs" placeholder="Prazo, contato, condições..."></div>
+      <div class="btn-row"><button class="btn pri" onclick="addForn()">Cadastrar</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Fornecedores</h3><span class="bdg neutral" id="forn-count">0</span></div>
+    <div class="tw"><table><thead><tr><th>Fornecedor</th><th>Grupo</th><th>Tipo</th><th>Valor</th><th>Status</th><th class="edit-only"></th></tr></thead><tbody id="tbody-forn"></tbody></table></div>
+  </div>
+</div>
+
+<!-- MATERIAIS -->
+<div id="p-materiais" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Registrar material</h3></div>
+    <div class="cb">
+      <div class="fg">
+        <div><label class="lbl">Descrição</label><input id="m-desc" placeholder="Ex: Porcelanato 90x90 — Sala"></div>
+        <div><label class="lbl">Fornecedor / loja</label><input id="m-forn" placeholder="Ex: Portobello..."></div>
+      </div>
+      <div class="fg4">
+        <div><label class="lbl">Valor produto (R$)</label><input id="m-valor" type="number" placeholder="0,00"></div>
+        <div><label class="lbl">Frete (R$)</label><input id="m-frete" type="number" placeholder="0,00" value="0"></div>
+        <div><label class="lbl">Data</label><input id="m-data" type="date"></div>
+        <div><label class="lbl">Grupo</label>
+          <select id="m-grupo"><option value="">Selecione...</option><option>1 · Demolições</option><option>2 · Coberturas</option><option>3 · Elétrica</option><option>4 · Hidráulica</option><option>5 · Acabamentos</option><option>6 · Gesso</option><option>7 · Civil</option><option>8 · Impermeabilização</option><option>9 · Pintura</option><option>Outros</option></select>
+        </div>
+      </div>
+      <div class="fg">
+        <div><label class="lbl">Status</label><select id="m-status"><option>Pedido realizado</option><option>Pago — aguardando entrega</option><option>Entregue na obra</option><option>Devolvido / cancelado</option></select></div>
+        <div><label class="lbl">Nota fiscal / referência</label><input id="m-nf" placeholder="Nº NF ou referência"></div>
+      </div>
+      <div class="btn-row"><button class="btn pri" onclick="addMat()">Registrar</button></div>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Total materiais</div><div class="mv" id="mat-total">R$ 0</div><div class="ms">produto + frete</div></div>
+    <div class="mc"><div class="ml">Entregues</div><div class="mv" id="mat-entregue">R$ 0</div></div>
+    <div class="mc"><div class="ml">Aguardando</div><div class="mv" id="mat-aguard">R$ 0</div></div>
+    <div class="mc"><div class="ml">Honorários s/ mat.</div><div class="mv" id="mat-honor">R$ 0</div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Materiais</h3>
+    <select id="m-filtro" style="width:auto;font-size:12px;padding:4px 8px;" onchange="renderMat()">
+      <option value="">Todos</option><option>1 · Demolições</option><option>2 · Coberturas</option><option>3 · Elétrica</option><option>4 · Hidráulica</option><option>5 · Acabamentos</option><option>6 · Gesso</option><option>7 · Civil</option><option>8 · Impermeabilização</option><option>9 · Pintura</option><option>Outros</option>
+    </select>
+  </div>
+    <div class="tw"><table><thead><tr><th>Material</th><th>Fornecedor</th><th>Grupo</th><th>Data</th><th>NF</th><th>Produto</th><th>Frete</th><th>Total</th><th>Status</th><th class="edit-only"></th></tr></thead><tbody id="tbody-mat"></tbody></table></div>
+  </div>
+</div>
+
+<!-- MAPA DE COTAÇÃO -->
+<div id="p-cotacao" class="page" style="display:none;">
+  <div class="card"><div class="ch"><h3>💡 Como funciona</h3></div>
+    <div class="cb"><p style="font-size:13px;color:var(--text2);line-height:1.7;">Cadastre o produto com a quantidade total necessária. Para cada fornecedor, informe o preço unitário e o frete. O sistema calcula automaticamente o <strong>custo total real</strong> (qtd × preço + frete) e identifica a melhor opção considerando todos os custos — não apenas o menor preço unitário.</p></div>
+  </div>
+  <div class="card edit-only"><div class="ch"><h3>Nova cotação</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Produto / descrição</label><input id="cot-nome" placeholder="Ex: Porcelanato 90x90 — 120m²"></div>
+        <div><label class="lbl">Quantidade total</label><input id="cot-qtd" type="number" placeholder="0" oninput="atualizaTotaisCot()"></div>
+        <div><label class="lbl">Unidade</label><input id="cot-unid" placeholder="m², un, kg, cx..."></div>
+      </div>
+      <div class="fg">
+        <div><label class="lbl">Grupo do escopo</label>
+          <select id="cot-grupo"><option value="">Selecione...</option><option>5 · Acabamentos</option><option>3 · Elétrica</option><option>4 · Hidráulica</option><option>2 · Coberturas</option><option>7 · Civil</option><option>8 · Impermeabilização</option><option>9 · Pintura</option><option>Outros</option></select>
+        </div>
+        <div><label class="lbl">Data da cotação</label><input id="cot-data" type="date"></div>
+      </div>
+      <hr class="sep">
+      <p style="font-size:12px;font-weight:600;margin-bottom:10px;">Fornecedores (até 5)</p>
+      <div id="cot-forn-inputs"></div>
+      <div class="btn-row">
+        <button class="btn sm" onclick="addCotForn()">+ Adicionar fornecedor</button>
+        <button class="btn pri" onclick="saveCotacao()">Salvar cotação</button>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Cotações salvas</h3><span class="bdg ok">Total real = qtd × preço + frete</span></div><div class="cb" id="cotacoes-list"></div></div>
+</div>
+
+<!-- PAGAMENTOS -->
+<div id="p-pagamentos" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Registrar pagamento</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Destinatário</label><input id="pag-dest" placeholder="Fornecedor ou loja..."></div>
+        <div><label class="lbl">Valor pago (R$)</label><input id="pag-valor" type="number" placeholder="0,00"></div>
+        <div><label class="lbl">Data</label><input id="pag-data" type="date"></div>
+      </div>
+      <div class="fg3">
+        <div><label class="lbl">Tipo</label><select id="pag-tipo"><option>Fornecedor serviço</option><option>Material</option><option>Honorários recebidos</option><option>Custo operacional</option><option>Outros</option></select></div>
+        <div><label class="lbl">Forma de pagamento</label><select id="pag-forma"><option>PIX</option><option>TED</option><option>Boleto</option><option>Dinheiro</option><option>Cartão</option></select></div>
+        <div><label class="lbl">Comprovante / ref.</label><input id="pag-ref" placeholder="Nº transação, recibo..."></div>
+      </div>
+      <div class="btn-row"><button class="btn pri" onclick="addPagamento()">Registrar</button></div>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Total saídas</div><div class="mv" id="pag-total">R$ 0</div></div>
+    <div class="mc"><div class="ml">Honorários recebidos</div><div class="mv" id="pag-honor-rec">R$ 0</div></div>
+    <div class="mc"><div class="ml">Honorários a receber</div><div class="mv" id="pag-a-receber">R$ 0</div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Histórico</h3></div>
+    <div class="tw"><table><thead><tr><th>Data</th><th>Destinatário</th><th>Tipo</th><th>Forma</th><th>Valor</th><th>Ref.</th><th class="edit-only"></th></tr></thead><tbody id="tbody-pag"></tbody></table></div>
+  </div>
+</div>
+
+<!-- FLUXO DE CAIXA -->
+<div id="p-fluxocaixa" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Novo lançamento</h3></div>
+    <div class="cb">
+      <div class="fg4">
+        <div><label class="lbl">Descrição</label><input id="fc-desc" placeholder="Ex: Pagamento empreiteiro..."></div>
+        <div><label class="lbl">Tipo</label><select id="fc-tipo"><option value="saida">Saída</option><option value="entrada">Entrada</option></select></div>
+        <div><label class="lbl">Valor (R$)</label><input id="fc-valor" type="number" placeholder="0,00"></div>
+        <div><label class="lbl">Data</label><input id="fc-data" type="date"></div>
+      </div>
+      <div class="btn-row"><button class="btn pri" onclick="addFC()">Lançar</button></div>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Total entradas</div><div class="mv" id="fc-entradas">R$ 0</div></div>
+    <div class="mc"><div class="ml">Total saídas</div><div class="mv" id="fc-saidas">R$ 0</div></div>
+    <div class="mc"><div class="ml">Saldo</div><div class="mv" id="fc-saldo">R$ 0</div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Lançamentos</h3></div>
+    <div class="tw"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th class="edit-only"></th></tr></thead><tbody id="tbody-fc"></tbody></table></div>
+  </div>
+</div>
+
+<!-- MEDIÇÃO MENSAL -->
+<div id="p-medicao" class="page" style="display:none;">
+  <div class="card"><div class="ch"><h3>Medição mensal</h3></div>
+    <div class="cb"><div class="fg"><div><label class="lbl">Mês de referência</label><input id="med-mes" type="month" onchange="renderMedicao()"></div><div><label class="lbl">Data da medição</label><input id="med-data" type="date"></div></div></div>
+  </div>
+  <p class="st">Serviços / contratos</p>
+  <div class="card"><div class="cb" id="med-forn-wrap"></div></div>
+  <p class="st">Materiais do mês (produto + frete)</p>
+  <div class="card"><div class="cb" id="med-mat-wrap"></div></div>
+  <p class="st">Resumo</p>
+  <div class="mg">
+    <div class="mc"><div class="ml">Serviços medidos</div><div class="mv" id="rs-serv">R$ 0</div></div>
+    <div class="mc"><div class="ml">Materiais</div><div class="mv" id="rs-mat">R$ 0</div></div>
+    <div class="mc"><div class="ml">Base honorários</div><div class="mv" id="rs-base">R$ 0</div></div>
+    <div class="mc"><div class="ml">Honorários</div><div class="mv" id="rs-honor">R$ 0</div></div>
+    <div class="mc"><div class="ml">Total cliente paga</div><div class="mv" id="rs-total">R$ 0</div><div class="ms">dia 15</div></div>
+  </div>
+  <div class="btn-row no-print"><button class="btn pri" onclick="gerarRelatorio()">Gerar relatório para o cliente</button></div>
+</div>
+
+<!-- RELATÓRIO -->
+<div id="p-relatorio" class="page" style="display:none;">
+  <div class="btn-row no-print" style="margin-bottom:14px;"><button class="btn" onclick="window.print()">🖨️ Imprimir / PDF</button></div>
+  <div id="rel-content" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:32px;font-size:13px;line-height:1.8;"><p style="color:var(--text3);">Gere a medição primeiro.</p></div>
+</div>
+
+<!-- MEUS CUSTOS -->
+<div id="p-custos" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Registrar custo operacional</h3></div>
+    <div class="cb">
+      <div class="fg4">
+        <div><label class="lbl">Categoria</label>
+          <select id="cu-cat"><option>Combustível / gasolina</option><option>Alimentação</option><option>Estacionamento</option><option>Uber / transporte</option><option>Impressões / plotagem</option><option>Ligações / internet</option><option>Ferramentas / EPIs</option><option>Tempo (hora técnica)</option><option>Outros</option></select>
+        </div>
+        <div><label class="lbl">Valor (R$)</label><input id="cu-valor" type="number" placeholder="0,00"></div>
+        <div><label class="lbl">Data</label><input id="cu-data" type="date"></div>
+        <div><label class="lbl">Horas (se tempo)</label><input id="cu-horas" type="number" placeholder="0" step="0.5"></div>
+      </div>
+      <div class="ff"><label class="lbl">Descrição</label><input id="cu-desc" placeholder="Ex: Visita de obra — reunião com empreiteiro de elétrica"></div>
+      <div class="btn-row"><button class="btn pri" onclick="addCusto()">Registrar custo</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Valor da sua hora técnica</h3></div>
+    <div class="cb">
+      <label class="lbl">Sua hora vale (R$)</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+        <input type="number" id="hora-valor" placeholder="Ex: 150,00" oninput="calcRent()" style="max-width:160px;">
+        <span style="font-size:12px;color:var(--text2);">por hora</span>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:6px;">Usado para calcular o custo real do seu tempo dedicado à obra.</p>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Custos operacionais</div><div class="mv" id="cu-total">R$ 0</div></div>
+    <div class="mc"><div class="ml">Horas investidas</div><div class="mv" id="cu-horas-total">0h</div></div>
+    <div class="mc"><div class="ml">Custo do tempo</div><div class="mv" id="cu-tempo-val">R$ 0</div></div>
+    <div class="mc"><div class="ml">Custo total real</div><div class="mv" id="cu-real">R$ 0</div><div class="ms">operacional + tempo</div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Rentabilidade</h3></div><div class="cb" id="rent-box"></div></div>
+  <div class="card"><div class="ch"><h3>Lançamentos</h3></div>
+    <div class="tw"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Horas</th><th>Valor</th><th class="edit-only"></th></tr></thead><tbody id="tbody-cu"></tbody></table></div>
+  </div>
+</div>
+
+<!-- DIÁRIO -->
+<div id="p-diario" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Nova entrada</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Data</label><input id="d-data" type="date"></div>
+        <div><label class="lbl">Etapa / grupo</label><input id="d-fase" placeholder="Ex: Demolições — banheiros"></div>
+        <div><label class="lbl">Clima</label><select id="d-clima"><option>☀️ Sol</option><option>⛅ Nublado</option><option>🌧️ Chuva</option><option>🌩️ Temporal</option></select></div>
+      </div>
+      <div class="ff"><label class="lbl">Registro</label><textarea id="d-txt" placeholder="Atividades executadas, ocorrências, materiais recebidos, decisões, visitas técnicas..."></textarea></div>
+      <div class="btn-row"><button class="btn pri" onclick="addDiario()">Registrar</button></div>
+    </div>
+  </div>
+  <div id="diario-list"></div>
+</div>
+
+<!-- GALERIA DE FOTOS -->
+<div id="p-fotos" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Adicionar fotos</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Etapa / grupo</label>
+          <select id="foto-grupo"><option value="">Selecione...</option><option>Pré-obra</option><option>1 · Demolições</option><option>2 · Coberturas</option><option>3 · Elétrica</option><option>4 · Hidráulica</option><option>5 · Acabamentos</option><option>6 · Gesso</option><option>7 · Civil</option><option>8 · Impermeabilização</option><option>9 · Pintura</option><option>Geral</option></select>
+        </div>
+        <div><label class="lbl">Data</label><input id="foto-data" type="date"></div>
+        <div><label class="lbl">Legenda</label><input id="foto-leg" placeholder="Breve descrição..."></div>
+      </div>
+      <div class="ff"><label class="lbl">Selecionar foto(s)</label><input type="file" id="foto-file" accept="image/*" multiple onchange="addFotos(event)"></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+    <select id="foto-filtro" style="width:auto;font-size:12px;padding:4px 8px;" onchange="renderFotos()">
+      <option value="">Todas as etapas</option><option>Pré-obra</option><option>1 · Demolições</option><option>2 · Coberturas</option><option>3 · Elétrica</option><option>4 · Hidráulica</option><option>5 · Acabamentos</option><option>Geral</option>
+    </select>
+    <span class="bdg neutral" id="foto-count">0 fotos</span>
+  </div>
+  <div class="foto-grid" id="foto-grid"></div>
+</div>
+
+<!-- AGENDA DE VISITAS -->
+<div id="p-visitas" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Agendar visita</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Data</label><input id="vis-data" type="date"></div>
+        <div><label class="lbl">Horário</label><input id="vis-hora" type="time"></div>
+        <div><label class="lbl">Tipo</label><select id="vis-tipo"><option>Visita de obra</option><option>Reunião com cliente</option><option>Reunião com empreiteiro</option><option>Reunião com fornecedor</option><option>Vistoria técnica</option><option>Medição</option></select></div>
+      </div>
+      <div class="fg">
+        <div><label class="lbl">Participantes</label><input id="vis-part" placeholder="Ex: Cliente, mestre de obras..."></div>
+        <div><label class="lbl">Local</label><input id="vis-local" placeholder="Ex: Obra, escritório..."></div>
+      </div>
+      <div class="ff"><label class="lbl">Pauta / observações</label><textarea id="vis-pauta" style="min-height:56px;" placeholder="O que será discutido ou verificado..."></textarea></div>
+      <div class="btn-row"><button class="btn pri" onclick="addVisita()">Agendar</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Agenda</h3></div><div class="cb" id="visitas-list"></div></div>
+</div>
+
+<!-- CONTATOS -->
+<div id="p-contatos" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Cadastrar contato</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Nome</label><input id="con-nome" placeholder="Nome completo..."></div>
+        <div><label class="lbl">Papel na obra</label><select id="con-papel"><option>Cliente</option><option>Arquiteta parceira</option><option>Mestre de obras</option><option>Empreiteiro</option><option>Fornecedor de material</option><option>Engenheiro</option><option>Decorador</option><option>Outro</option></select></div>
+        <div><label class="lbl">Empresa</label><input id="con-empresa" placeholder="Empresa (opcional)..."></div>
+      </div>
+      <div class="fg3">
+        <div><label class="lbl">Telefone / WhatsApp</label><input id="con-tel" placeholder="(11) 99999-0000"></div>
+        <div><label class="lbl">E-mail</label><input id="con-email" type="email" placeholder="email@exemplo.com"></div>
+        <div><label class="lbl">Especialidade</label><input id="con-esp" placeholder="Ex: Elétrica, Hidráulica..."></div>
+      </div>
+      <div class="btn-row"><button class="btn pri" onclick="addContato()">Cadastrar</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Contatos</h3><span class="bdg neutral" id="con-count">0</span></div><div class="cb" id="contatos-list"></div></div>
+</div>
+
+<!-- VISTORIA DE ENTREGA -->
+<div id="p-vistoria" class="page" style="display:none;">
+  <div class="card edit-only"><div class="ch"><h3>Adicionar item de vistoria</h3></div>
+    <div class="cb">
+      <div class="fg3">
+        <div><label class="lbl">Ambiente / local</label><input id="vi-amb" placeholder="Ex: Banheiro suíte, piscina..."></div>
+        <div><label class="lbl">Item a verificar</label><input id="vi-item" placeholder="Ex: Rejunte, vedação..."></div>
+        <div><label class="lbl">Responsável pelo reparo</label><select id="vi-resp"><option>Empreiteiro geral</option><option>Elétrica</option><option>Hidráulica</option><option>Pintura</option><option>Gesso</option><option>A definir</option></select></div>
+      </div>
+      <div class="ff"><label class="lbl">Observações</label><input id="vi-obs" placeholder="Detalhes do problema..."></div>
+      <div class="btn-row"><button class="btn pri" onclick="addVistoria()">Adicionar</button></div>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Total itens</div><div class="mv" id="vis-total">0</div></div>
+    <div class="mc"><div class="ml">Pendentes</div><div class="mv" id="vis-pend">0</div></div>
+    <div class="mc"><div class="ml">Resolvidos</div><div class="mv" id="vis-res">0</div></div>
+    <div class="mc"><div class="ml">Aprovados</div><div class="mv" id="vis-apr">0</div></div>
+  </div>
+  <div class="card"><div class="ch"><h3>Checklist de entrega</h3></div><div class="cb" id="vistoria-list"></div></div>
+</div>
+
+<!-- CONFIGURAÇÕES -->
+<div id="p-config" class="page" style="display:none;">
+  <div class="card"><div class="ch"><h3>Dados da obra</h3></div>
+    <div class="cb">
+      <div class="fg"><div><label class="lbl">Nome da obra</label><input id="cfg-nome" onchange="saveConfig()"></div><div><label class="lbl">Endereço</label><input id="cfg-end" onchange="saveConfig()"></div></div>
+      <div class="fg"><div><label class="lbl">Cliente</label><input id="cfg-cliente" onchange="saveConfig()"></div><div><label class="lbl">E-mail do cliente</label><input id="cfg-email" onchange="saveConfig()"></div></div>
+      <div class="fg"><div><label class="lbl">Início da obra</label><input id="cfg-inicio" type="date" onchange="saveConfig()"></div><div><label class="lbl">Previsão de término</label><input id="cfg-fim" type="date" onchange="saveConfig()"></div></div>
+      <div class="fg"><div><label class="lbl">Nome da arquiteta</label><input id="cfg-arq" onchange="saveConfig()"></div><div><label class="lbl">CAU / registro</label><input id="cfg-cau" onchange="saveConfig()"></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Honorários</h3></div>
+    <div class="cb">
+      <label class="lbl">Percentual sobre fornecedores + materiais</label>
+      <div class="rw" style="margin-top:8px;gap:16px;">
+        <input type="range" min="1" max="30" step="0.5" id="pct-range" oninput="updatePct()">
+        <span class="rv" id="pct-val">15%</span>
+        <span style="font-size:26px;font-weight:300;font-family:'DM Mono',monospace;color:var(--accent);" id="pct-big">15%</span>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><h3>Dados</h3></div>
+    <div class="cb">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">Dados salvos automaticamente no navegador. Exporte regularmente como backup JSON.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="exportData()">Exportar JSON</button>
+        <label class="btn" style="cursor:pointer;">Importar JSON<input type="file" accept=".json" style="display:none;" onchange="importData(event)"></label>
+        <button class="btn danger sm" onclick="clearAll()">Limpar tudo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+<script>
+let S={
+  mode:'edit',pct:15,horaValor:0,filtroTarefas:'todas',cotFornCount:0,
+  escopoGrupos:[],
+  config:{nome:'Gestão de Obra Pro',sub:'Retrofit Sobrado',end:'',cliente:'',email:'',inicio:'',fim:'',arq:'',cau:''},
+  checkDone:[],fornecedores:[],materiais:[],medicaoForn:{},
+  cotacoes:[],pagamentos:[],fluxoCaixa:[],custos:[],
+  diario:[],fotos:[],visitas:[],contatos:[],tarefas:[],pranchas:[],vistoria:[],
+  cronogramaEtapas:{}
+};
+function save(){try{localStorage.setItem('obra_pro2',JSON.stringify(S));}catch(e){}}
+function load(){try{const d=localStorage.getItem('obra_pro2');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}}
+function exportData(){const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='obra-pro-'+new Date().toISOString().slice(0,10)+'.json';a.click();}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{S=Object.assign(S,JSON.parse(ev.target.result));save();location.reload();}catch{alert('Arquivo inválido.');}};r.readAsText(f);}
+function clearAll(){if(confirm('Limpar todos os dados?')){localStorage.removeItem('obra_pro2');location.reload();}}
+function fmt(v){return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtD(s){if(!s)return'—';const[y,m,d]=s.split('-');return d+'/'+m+'/'+y;}
+function today(){return new Date().toISOString().split('T')[0];}
+function setMode(m){
+  S.mode=m;save();const e=m==='edit';
+  document.getElementById('mode-bar').classList.toggle('hidden',e);
+  document.getElementById('mode-btn').textContent=e?'Arq. gestora ✏️':'Visualização 👁️';
+  document.querySelectorAll('.edit-only').forEach(el=>el.style.display=e?'':'none');
+  document.querySelectorAll('th.edit-only,td.edit-only').forEach(el=>el.style.display=e?'':'none');
+  // re-renderizar escopo para mostrar/ocultar botões de edição inline
+  const escopoPage=document.getElementById('p-escopo');
+  if(escopoPage&&escopoPage.style.display!=='none')renderEscopo();
+}
+function toggleMode(){setMode(S.mode==='edit'?'view':'edit');}
+const PM={painel:'Painel',timeline:'Linha do tempo',escopo:'Escopo',cronograma:'Cronograma + Gantt',tarefas:'Tarefas',projetos:'Projetos / Pranchas',docs:'Documentos',riscos:'Riscos',fornecedores:'Fornecedores',materiais:'Materiais',cotacao:'Mapa de Cotação',pagamentos:'Pagamentos',fluxocaixa:'Fluxo de Caixa',medicao:'Medição Mensal',relatorio:'Relatório Cliente',custos:'Meus Custos',diario:'Diário de Obra',fotos:'Galeria de Fotos',visitas:'Agenda de Visitas',contatos:'Contatos',vistoria:'Vistoria de Entrega',config:'Configurações'};
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  const pg=document.getElementById('p-'+id);if(pg)pg.style.display='block';
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>{if(n.getAttribute('onclick')===`go('${id}')`)n.classList.add('active');});
+  document.getElementById('page-title').textContent=PM[id]||id;
+  const fns={painel:renderPainel,timeline:renderTimeline,escopo:renderEscopo,cronograma:renderCronograma,tarefas:()=>renderTarefas(S.filtroTarefas),projetos:renderPranchas,fotos:renderFotos,visitas:renderVisitas,contatos:renderContatos,vistoria:renderVistoria,medicao:renderMedicao,fluxocaixa:renderFC,pagamentos:renderPagamentos,custos:calcRent,cotacao:renderCotacoes};
+  if(fns[id])fns[id]();
+  closeSB();
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+function updatePct(){S.pct=parseFloat(document.getElementById('pct-range').value);document.getElementById('pct-val').textContent=S.pct+'%';document.getElementById('pct-big').textContent=S.pct+'%';save();renderPainel();renderMatCards();}
+function saveConfig(){['nome','end','cliente','email','inicio','fim','arq','cau'].forEach(k=>{const el=document.getElementById('cfg-'+k);if(el)S.config[k]=el.value;});document.getElementById('sb-nome').textContent=S.config.nome||'Gestão de Obra Pro';document.getElementById('sb-sub').textContent=S.config.cliente||'Retrofit Sobrado';save();}
+const ACOES=[
+  {id:'a1',txt:'RRT emitida e registrada no CAU para esta obra',tag:'danger',label:'Urgente'},
+  {id:'a2',txt:'Alvará de reforma / demolição aprovado na prefeitura',tag:'danger',label:'Urgente'},
+  {id:'a3',txt:'Seguro de obra RC contratado (item 11.1 do escopo)',tag:'danger',label:'Urgente'},
+  {id:'a4',txt:'Levantamento fotográfico pré-demolição realizado',tag:'danger',label:'Urgente'},
+  {id:'a5',txt:'Escoramento executado antes de demolições estruturais',tag:'warn',label:'Crítico'},
+  {id:'a6',txt:'Proteções aplicadas em itens a reutilizar (12.2)',tag:'warn',label:'Antes de demolir'},
+  {id:'a7',txt:'Caçamba contratada e posicionada (grupo 13)',tag:'warn',label:'Antes de demolir'},
+  {id:'a8',txt:'EPIs disponíveis para todos na obra',tag:'warn',label:'Segurança'},
+  {id:'a9',txt:'Projeto de gás revisado — interferências mapeadas',tag:'warn',label:'Crítico'},
+  {id:'a10',txt:'Contratos assinados com empreiteiros por etapa',tag:'info',label:'Pendente'},
+];
+function renderPainel(){
+  const ul=document.getElementById('cl-urgente');
+  ul.innerHTML=ACOES.map(a=>{const done=S.checkDone.includes(a.id);return`<li class="${done?'done':''}"><input type="checkbox" ${done?'checked':''} onchange="toggleCheck('${a.id}',this.checked)"><span class="ct">${a.txt}</span><span class="bdg ${a.tag}">${a.label}</span></li>`;}).join('');
+  const tf=S.fornecedores.reduce((s,f)=>s+f.valor,0);
+  const tm=S.materiais.reduce((s,m)=>s+m.valor+(m.frete||0),0);
+  const base=tf+tm,done=S.checkDone.length;
+  document.getElementById('mg-painel').innerHTML=`
+    <div class="mc"><div class="ml">Ações concluídas</div><div class="mv">${Math.round(done/ACOES.length*100)}%</div><div class="ms">${done}/${ACOES.length}</div></div>
+    <div class="mc"><div class="ml">Contratos serviços</div><div class="mv">${fmt(tf)}</div></div>
+    <div class="mc"><div class="ml">Materiais</div><div class="mv">${fmt(tm)}</div></div>
+    <div class="mc"><div class="ml">Honorários totais</div><div class="mv">${fmt(base*S.pct/100)}</div><div class="ms">${S.pct}% sobre base</div></div>
+    <div class="mc"><div class="ml">Tarefas pendentes</div><div class="mv">${S.tarefas.filter(t=>!t.done).length}</div></div>
+    <div class="mc"><div class="ml">Pranchas ativas</div><div class="mv">${S.pranchas.filter(p=>p.status!=='Cancelado').length}</div></div>`;
+  const hoje=new Date(),d10=new Date(hoje.getFullYear(),hoje.getMonth(),10);
+  if(hoje>d10)d10.setMonth(d10.getMonth()+1);
+  document.getElementById('dias-med').textContent=Math.ceil((d10-hoje)/864e5);
+  document.getElementById('resumo-fin-painel').innerHTML=base?`<div style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;"><span style="color:var(--text2)">Serviços</span><span>${fmt(tf)}</span></div><div style="display:flex;justify-content:space-between;"><span style="color:var(--text2)">Materiais</span><span>${fmt(tm)}</span></div><hr class="sep" style="margin:4px 0;"><div style="display:flex;justify-content:space-between;color:var(--accent);font-weight:600;"><span>Honorários (${S.pct}%)</span><span>${fmt(base*S.pct/100)}</span></div></div>`:'<p style="font-size:12px;color:var(--text3);">Cadastre fornecedores para ver o resumo.</p>';
+  const pend=S.tarefas.filter(t=>!t.done).slice(0,5);
+  document.getElementById('painel-tarefas').innerHTML=pend.length?pend.map(t=>`<div class="task-row"><input type="checkbox" onchange="toggleTarefaCheck(${t.id},this.checked)"><div class="task-info"><div class="task-name">${t.nome}</div><div class="task-meta">${t.resp} · ${fmtD(t.prazo)}</div></div><span class="bdg ${t.prio==='Alta'?'danger':t.prio==='Média'?'warn':'neutral'}">${t.prio}</span></div>`).join(''):'<div class="empty" style="padding:12px;">Nenhuma tarefa pendente.</div>';
+}
+function toggleCheck(id,v){if(v){if(!S.checkDone.includes(id))S.checkDone.push(id);}else S.checkDone=S.checkDone.filter(x=>x!==id);save();renderPainel();}
+// Escopo padrão — carregado apenas na primeira vez
+const ESCOPO_DEFAULT=[
+  {id:'g1',n:'1',nome:'Demolições e Remoções',st:'active',itens:['Demolição de alvenarias','Demolição de pisos e revestimentos','Remoção de escada existente (madeira)','Demolição de edícula / churrasqueira','Demolição de Spa da Piscina','Remoção de portas e janelas','Remoção de iluminação existente','Demolição de forro existente','Remoção de bancadas existentes','Remoção de louças e metais','Remoção de marcenarias e mobiliários','Remoção de pergolado de madeira','Remoção de espelhos, box etc.','Remoção de caixas d\'água','Remoção de contrapiso (se necessário)','Demolição da casa de máquinas piscina','Remoção de telhados e coberturas','Remoção de escada e revestimento da piscina']},
+  {id:'g2',n:'2',nome:'Coberturas',st:'pend',itens:['Estrutura de telhado','Instalação de telhas','Impermeabilização','Isolamento térmico/acústico']},
+  {id:'g3',n:'3',nome:'Instalações Elétricas',st:'pend',itens:['Infraestrutura (eletrodutos, caixas)','Passagem de fiação (toda nova)','Instalação de quadros elétricos','Instalação de tomadas e interruptores','Instalação de luminárias','Infra para automação','Cabeamento para automação','Elétrica ar-condicionado','Infra para aquecimento de piscina e spa','Infra para casa de máquinas (Piscina e Sauna)']},
+  {id:'g4',n:'4',nome:'Instalações Hidráulicas',st:'pend',itens:['Infra de água fria','Infra de água quente','Infra de esgoto','Troca de tubulações existentes','Troca de registros e ralos','Drenagem de áreas externas','Instalação de reservatórios','Infra para gás encanado','Pontos de dreno para ar-cond.','Regularização de caixas de inspeção','Instalação de louças e metais','Infra para banheiras','Instalação de banheiras','Infra para aquecimento de piscina e spa','Infra para casa de máquinas']},
+  {id:'g5',n:'5',nome:'Acabamentos e Revestimentos',st:'pend',itens:['Pisos em porcelanato','Revestimentos de parede','Rodapés','Revestimentos na piscina','Deck piscina/sauna','Piso atérmico área da piscina']},
+  {id:'g6',n:'6',nome:'Gesso',st:'pend',itens:['Forro de gesso tabicado','Execução de rebaixos','Acabamentos em gesso liso','Paredes em drywall']},
+  {id:'g7',n:'7',nome:'Civil',st:'pend',itens:['Novas alvenarias','Regularização de contrapisos','Regularização de alvenarias','Regularização de vãos','Instalação de contramarcos','Vergas e contravergas','Nova escada moldada in loco','Degraus para entrada','Abrigo para medidores e gás','Armário em alvenaria','Espaço para hidromassagem','Casa de máquinas embutida no solo','Laje técnica (garagem e suíte 02)','Escoramento']},
+  {id:'g8',n:'8',nome:'Impermeabilizações',st:'pend',itens:['Áreas molhadas (banhos, cozinha, lavanderia, sauna)','Lajes','Piscina','Fundações (reparos)','Ralos']},
+  {id:'g9',n:'9',nome:'Pintura',st:'pend',itens:['Preparação de superfícies','Aplicação de massa corrida','Lixamento','Pintura de paredes','Pintura de forros e lajes','Pintura externa','Texturas/efeitos','Retoque final']},
+  {id:'g10',n:'10',nome:'Finalizações',st:'pend',itens:['Testes de elétrica','Testes de hidráulica','Limpeza grossa de obra']},
+  {id:'g11',n:'11',nome:'Seguro de Obra',st:'pend',itens:['Contratação de seguro RC']},
+  {id:'g12',n:'12',nome:'Proteções',st:'pend',itens:['Proteções em pisos, paredes, janelas','Proteções em itens a reutilizar']},
+  {id:'g13',n:'13',nome:'Entulhos',st:'pend',itens:['Transporte até caçamba','Ensaque de entulhos']},
+];
+function getEscopo(){return S.escopoGrupos&&S.escopoGrupos.length?S.escopoGrupos:ESCOPO_DEFAULT;}
+function addGrupoEscopo(){
+  const nome=document.getElementById('esc-nome').value.trim();
+  if(!nome){alert('Preencha o nome do grupo.');return;}
+  if(!S.escopoGrupos||!S.escopoGrupos.length)S.escopoGrupos=JSON.parse(JSON.stringify(ESCOPO_DEFAULT));
+  const n=S.escopoGrupos.length+1;
+  S.escopoGrupos.push({id:'g'+Date.now(),n:String(n),nome,st:document.getElementById('esc-status').value,itens:[]});
+  document.getElementById('esc-nome').value='';
+  save();renderEscopo();renderCronograma();
+}
+function addItemEscopo(gid){
+  const inp=document.getElementById('inp-item-'+gid);
+  const txt=inp?inp.value.trim():'';
+  if(!txt){alert('Descreva o item.');return;}
+  if(!S.escopoGrupos||!S.escopoGrupos.length)S.escopoGrupos=JSON.parse(JSON.stringify(ESCOPO_DEFAULT));
+  const g=S.escopoGrupos.find(x=>x.id===gid);
+  if(g){g.itens.push(txt);inp.value='';}
+  save();renderEscopo();
+}
+function delItemEscopo(gid,idx){
+  if(!S.escopoGrupos||!S.escopoGrupos.length)S.escopoGrupos=JSON.parse(JSON.stringify(ESCOPO_DEFAULT));
+  const g=S.escopoGrupos.find(x=>x.id===gid);
+  if(g){g.itens.splice(idx,1);}
+  save();renderEscopo();
+}
+function setGrupoStatus(gid,st){
+  if(!S.escopoGrupos||!S.escopoGrupos.length)S.escopoGrupos=JSON.parse(JSON.stringify(ESCOPO_DEFAULT));
+  const g=S.escopoGrupos.find(x=>x.id===gid);if(g)g.st=st;
+  save();renderEscopo();
+}
+function delGrupoEscopo(gid){
+  if(!confirm('Remover este grupo do escopo?'))return;
+  if(!S.escopoGrupos||!S.escopoGrupos.length)S.escopoGrupos=JSON.parse(JSON.stringify(ESCOPO_DEFAULT));
+  S.escopoGrupos=S.escopoGrupos.filter(g=>g.id!==gid);
+  save();renderEscopo();renderCronograma();
+}
+function renderEscopo(){
+  const grupos=getEscopo();
+  const totalItens=grupos.reduce((s,g)=>s+g.itens.length,0);
+  const cnt=document.getElementById('escopo-count');
+  if(cnt)cnt.textContent=grupos.length+' grupos · '+totalItens+' itens';
+  const isEdit=S.mode==='edit';
+  document.getElementById('escopo-body').innerHTML=grupos.map((g,gi)=>`
+    <div style="margin-bottom:12px;" id="esc-wrap-${g.id}">
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span class="pdot ${g.st==='done'?'done-dot':g.st==='active'?'active-dot':'pend-dot'}" style="flex-shrink:0;cursor:pointer;" onclick="cycleStatus('${g.id}')" title="Clique para mudar status"></span>
+        <span style="font-size:13px;font-weight:600;flex:1;cursor:pointer;" onclick="toggleG('eg${g.id}','ea${g.id}')">${g.n}. ${g.nome}</span>
+        <span class="bdg neutral">${g.itens.length} itens</span>
+        ${isEdit?`<select style="font-size:11px;padding:2px 6px;width:auto;" onchange="setGrupoStatus('${g.id}',this.value)"><option value="pend" ${g.st==='pend'?'selected':''}>Aguardando</option><option value="active" ${g.st==='active'?'selected':''}>Em andamento</option><option value="done" ${g.st==='done'?'selected':''}>Concluído</option></select>`:''}
+        <span id="ea${g.id}" style="color:var(--text3);font-size:12px;cursor:pointer;" onclick="toggleG('eg${g.id}','ea${g.id}')">▸</span>
+        ${isEdit?`<button class="btn sm danger" onclick="delGrupoEscopo('${g.id}')" title="Remover grupo" style="padding:2px 7px;">✕</button>`:''}
+      </div>
+      <div id="eg${g.id}" style="display:none;padding:8px 0 4px 18px;">
+        ${g.itens.map((it,i)=>`
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);">
+            <span style="flex:1;">${g.n}.${i+1} ${it}</span>
+            ${isEdit?`<button onclick="delItemEscopo('${g.id}',${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0 4px;" title="Remover item">✕</button>`:''}
+          </div>`).join('')}
+        ${isEdit?`<div style="display:flex;gap:6px;margin-top:8px;">
+          <input id="inp-item-${g.id}" placeholder="Novo item..." style="flex:1;font-size:12px;padding:5px 8px;" onkeydown="if(event.key==='Enter')addItemEscopo('${g.id}')">
+          <button class="btn sm pri" onclick="addItemEscopo('${g.id}')">+ Item</button>
+        </div>`:''}
+      </div>
+    </div>`).join('');
+}
+function cycleStatus(gid){
+  if(!S.escopoGrupos||!S.escopoGrupos.length)S.escopoGrupos=JSON.parse(JSON.stringify(ESCOPO_DEFAULT));
+  const g=S.escopoGrupos.find(x=>x.id===gid);
+  if(!g)return;
+  const cycle={pend:'active',active:'done',done:'pend'};
+  g.st=cycle[g.st]||'pend';
+  save();renderEscopo();
+}
+function toggleG(id,aid){const el=document.getElementById(id);const ar=document.getElementById(aid);if(!el||!ar)return;const o=el.style.display!=='none';el.style.display=o?'none':'block';ar.textContent=o?'▸':'▾';}
+function renderCronograma(){
+  const grupos=getEscopo();
+  const form=document.getElementById('cron-form');
+  form.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);"><span>Etapa</span><span>Início</span><span>Término</span></div>`+
+  grupos.map((g,i)=>{const k=g.id;const d=S.cronogramaEtapas[k]||{};
+    return`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;align-items:center;">
+      <span style="font-size:12px;font-weight:500;">${g.n}. ${g.nome}</span>
+      <input type="date" value="${d.ini||''}" onchange="saveCron('${k}','ini',this.value)" style="font-size:12px;padding:5px 8px;">
+      <input type="date" value="${d.fim||''}" onchange="saveCron('${k}','fim',this.value)" style="font-size:12px;padding:5px 8px;">
+    </div>`;}).join('');
+  renderGantt();
+}
+function saveCron(k,f,v){if(!S.cronogramaEtapas[k])S.cronogramaEtapas[k]={};S.cronogramaEtapas[k][f]=v;save();renderGantt();}
+function renderGantt(){
+  const gc=document.getElementById('gantt-chart');
+  const grupos=getEscopo();
+  const withD=grupos.map(g=>({nome:g.n+'. '+g.nome,...(S.cronogramaEtapas[g.id]||{})})).filter(e=>e.ini&&e.fim);
+  if(!withD.length){gc.innerHTML='<p style="font-size:12px;color:var(--text3);">Defina datas de início e término para visualizar o Gantt.</p>';return;}
+  const minD=new Date(Math.min(...withD.map(e=>new Date(e.ini))));
+  const maxD=new Date(Math.max(...withD.map(e=>new Date(e.fim))));
+  const total=(maxD-minD)/864e5||1;
+  const cores=['#2B5741','#1A4FBF','#A85500','#5B21B6','#0D7377','#B91C1C','#636363','#2B5741','#1A4FBF','#A85500','#5B21B6','#0D7377','#B91C1C'];
+  gc.innerHTML=`<div style="font-size:10px;color:var(--text2);margin-bottom:8px;font-family:'DM Mono',monospace;">${minD.toLocaleDateString('pt-BR')} → ${maxD.toLocaleDateString('pt-BR')} (${Math.round(total)} dias)</div>`+
+  grupos.map((g,i)=>{
+    const d=S.cronogramaEtapas[g.id]||{};
+    if(!d.ini||!d.fim)return`<div class="gantt-row"><div class="gantt-label">${g.n}. ${g.nome}</div><div class="gantt-bar-wrap" style="opacity:.2;"></div></div>`;
+    const s=(new Date(d.ini)-minD)/864e5;
+    const dur=Math.max(1,(new Date(d.fim)-new Date(d.ini))/864e5);
+    return`<div class="gantt-row"><div class="gantt-label" title="${g.nome}">${g.n}. ${g.nome}</div>
+      <div class="gantt-bar-wrap"><div class="gantt-bar" style="margin-left:${(s/total*100).toFixed(1)}%;width:${Math.max(2,(dur/total*100)).toFixed(1)}%;background:${cores[i%cores.length]};">${Math.round(dur)}d</div></div></div>`;
+  }).join('');
+}
+function addTarefa(){
+  const nome=document.getElementById('t-nome').value.trim();
+  if(!nome){alert('Descreva a tarefa.');return;}
+  S.tarefas.push({id:Date.now(),nome,resp:document.getElementById('t-resp').value,prazo:document.getElementById('t-prazo').value,prio:document.getElementById('t-prio').value,grupo:document.getElementById('t-grupo').value,obs:document.getElementById('t-obs').value.trim(),done:false});
+  document.getElementById('t-nome').value='';document.getElementById('t-obs').value='';
+  save();renderTarefas(S.filtroTarefas);renderPainel();
+}
+function toggleTarefaCheck(id,v){const t=S.tarefas.find(x=>x.id===id);if(t)t.done=v;save();renderTarefas(S.filtroTarefas);renderPainel();}
+function delTarefa(id){S.tarefas=S.tarefas.filter(t=>t.id!==id);save();renderTarefas(S.filtroTarefas);renderPainel();}
+function filtroT(f){
+  S.filtroTarefas=f;
+  ['todas','pendente','concluida','atrasada'].forEach(x=>{const b=document.getElementById('ft-'+x);if(b){b.style.background=f===x?'var(--text)':'';b.style.color=f===x?'#fff':'';}});
+  renderTarefas(f);
+}
+function renderTarefas(f){
+  const hj=today();
+  let lista=S.tarefas;
+  if(f==='pendente')lista=lista.filter(t=>!t.done);
+  else if(f==='concluida')lista=lista.filter(t=>t.done);
+  else if(f==='atrasada')lista=lista.filter(t=>!t.done&&t.prazo&&t.prazo<hj);
+  const el=document.getElementById('tarefas-list');
+  if(!lista.length){el.innerHTML='<div class="empty">Nenhuma tarefa.</div>';return;}
+  el.innerHTML=lista.map(t=>{
+    const at=!t.done&&t.prazo&&t.prazo<hj;
+    return`<div class="task-row">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTarefaCheck(${t.id},this.checked)">
+      <div class="task-info"><div class="task-name" style="${t.done?'text-decoration:line-through;opacity:.5;':''}">${t.nome}</div>
+      <div class="task-meta">${t.resp}${t.grupo?' · '+t.grupo:''} · Prazo: <span style="${at?'color:var(--danger);font-weight:600;':''}">${fmtD(t.prazo)||'—'}</span></div>
+      ${t.obs?`<div class="task-meta">${t.obs}</div>`:''}</div>
+      <span class="bdg ${t.prio==='Alta'?'danger':t.prio==='Média'?'warn':'neutral'}">${t.prio}</span>
+      ${at?'<span class="bdg danger">Atrasada</span>':''}
+      <button class="btn sm danger edit-only" onclick="delTarefa(${t.id})">✕</button>
+    </div>`;}).join('');
+  setMode(S.mode);
+}
+function addPrancha(){
+  const cod=document.getElementById('pr-cod').value.trim(),titulo=document.getElementById('pr-titulo').value.trim();
+  if(!cod||!titulo){alert('Preencha código e título.');return;}
+  S.pranchas.push({id:Date.now(),cod,titulo,disc:document.getElementById('pr-disc').value,escala:document.getElementById('pr-escala').value,data:document.getElementById('pr-data').value,status:document.getElementById('pr-status').value,obs:document.getElementById('pr-obs').value.trim(),revisoes:[],adicionais:[]});
+  document.getElementById('pr-cod').value='';document.getElementById('pr-titulo').value='';document.getElementById('pr-obs').value='';
+  save();renderPranchas();
+}
+function addRevisao(id){
+  const desc=prompt('Descreva a revisão / alteração:');if(!desc)return;
+  const p=S.pranchas.find(x=>x.id===id);if(!p)return;
+  const gera=confirm('Esta revisão gera adicional de valor ou prazo?');
+  let adicional=null;
+  if(gera){const v=prompt('Valor do adicional (R$):');const pz=prompt('Prazo adicional (dias):');adicional={valor:parseFloat(v)||0,prazo:parseInt(pz)||0};}
+  p.revisoes.push({data:today(),desc,adicional});
+  if(adicional)p.adicionais.push(adicional);
+  save();renderPranchas();
+}
+function delPrancha(id){if(!confirm('Remover prancha?'))return;S.pranchas=S.pranchas.filter(p=>p.id!==id);save();renderPranchas();}
+function renderPranchas(){
+  document.getElementById('pr-total').textContent=S.pranchas.length;
+  document.getElementById('pr-revisao').textContent=S.pranchas.filter(p=>p.status==='Em revisão').length;
+  document.getElementById('pr-aprovadas').textContent=S.pranchas.filter(p=>p.status==='Aprovado').length;
+  document.getElementById('pr-adicionais').textContent=S.pranchas.reduce((s,p)=>s+(p.adicionais||[]).length,0);
+  const el=document.getElementById('pranchas-list');
+  if(!S.pranchas.length){el.innerHTML='<div class="empty">Nenhuma prancha cadastrada.</div>';return;}
+  const sc={'Em desenvolvimento':'info','Emitido para aprovação':'warn','Aprovado':'ok','Em revisão':'danger','Cancelado':'neutral'};
+  el.innerHTML=S.pranchas.map(p=>`
+    <div class="prancha-row">
+      <div class="prancha-info">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);">${p.cod}</span>
+          <span style="font-size:13px;font-weight:600;">${p.titulo}</span>
+          <span class="bdg ${sc[p.status]||'neutral'}">${p.status}</span>
+          <span class="bdg neutral">${p.disc}</span>
+          ${p.escala?`<span class="bdg neutral">${p.escala}</span>`:''}
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px;">Emissão: ${fmtD(p.data)} · ${p.revisoes.length} revisão(ões) · ${(p.adicionais||[]).length} adicional(is)${p.obs?' · '+p.obs:''}</div>
+        ${p.revisoes.length?`<div class="rev-list">${p.revisoes.map((r,i)=>`<div class="rev-item">Rev.${i+1} · ${fmtD(r.data)} — ${r.desc}${r.adicional?` <span class="bdg warn">+${fmt(r.adicional.valor)} / +${r.adicional.prazo}d</span>`:''}</div>`).join('')}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+        <button class="btn sm edit-only" onclick="addRevisao(${p.id})">+ Revisão</button>
+        <button class="btn sm danger edit-only" onclick="delPrancha(${p.id})">✕</button>
+      </div>
+    </div>`).join('');
+  setMode(S.mode);
+}
+const DOCS_DATA=[
+  {nome:'RRT — Responsabilidade Técnica (CAU)',sub:'Obrigatória antes de qualquer execução',tag:'danger',label:'Pendente'},
+  {nome:'Alvará de reforma / demolição',sub:'Prefeitura — obrigatório',tag:'danger',label:'Pendente'},
+  {nome:'Seguro de obra RC',sub:'Item 11.1 do escopo',tag:'danger',label:'Pendente'},
+  {nome:'Projeto arquitetônico aprovado',sub:'',tag:'ok',label:'OK'},
+  {nome:'Projeto elétrico + automação',sub:'Pontos HDMI e automação',tag:'ok',label:'OK'},
+  {nome:'Projeto hidráulico (água, esgoto, piscina, spa)',sub:'',tag:'ok',label:'OK'},
+  {nome:'Projeto de gás encanado',sub:'Revisar interferências antes de demolir',tag:'warn',label:'Em revisão'},
+  {nome:'Contratos com empreiteiros',sub:'Assinar antes de iniciar cada grupo',tag:'danger',label:'Pendente'},
+  {nome:'Levantamento fotográfico pré-obra',sub:'Estado inicial de todas as áreas',tag:'danger',label:'Pendente'},
+  {nome:'Registro de trabalhadores (CTPS / RPA)',sub:'Verificar vínculos e regularidade',tag:'info',label:'Verificar'},
+  {nome:'Habite-se / averbação pós-obra',sub:'Regularização final no cartório',tag:'neutral',label:'Pós-obra'},
+];
+function renderDocs(){
+  document.getElementById('docs-body').innerHTML=DOCS_DATA.map(d=>`
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);">
+      <div style="width:30px;height:30px;border-radius:var(--rs);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">📄</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:500;">${d.nome}</div>${d.sub?`<div style="font-size:11px;color:var(--text2);margin-top:1px;">${d.sub}</div>`:''}</div>
+      <span class="bdg ${d.tag}">${d.label}</span>
+    </div>`).join('');
+}
+const RISCOS_DATA=[
+  {r:'Surpresas estruturais na demolição',p:'warn',pl:'Média',i:'danger',il:'Alto'},
+  {r:'Interferência nas redes de gás',p:'warn',pl:'Média',i:'danger',il:'Alto'},
+  {r:'Casa de máquinas no solo — nível freático',p:'warn',pl:'Média',i:'danger',il:'Alto'},
+  {r:'Infiltração em laje exposta durante chuvas',p:'danger',pl:'Alta',i:'warn',il:'Médio'},
+  {r:'Incompatibilidade entre projetos',p:'warn',pl:'Média',i:'warn',il:'Médio'},
+  {r:'Atraso na entrega de banheiras / spa',p:'danger',pl:'Alta',i:'warn',il:'Médio'},
+  {r:'Impermeabilização da piscina mal executada',p:'warn',pl:'Média',i:'danger',il:'Alto'},
+  {r:'Escopo adicional sem aditivo de contrato',p:'danger',pl:'Alta',i:'warn',il:'Médio'},
+  {r:'Obra sem seguro RC',p:'info',pl:'Baixa',i:'danger',il:'Alto'},
+  {r:'Laje técnica sem escoramento adequado',p:'info',pl:'Baixa',i:'danger',il:'Alto'},
+];
+function renderRiscos(){
+  document.getElementById('riscos-list').innerHTML=RISCOS_DATA.map(r=>`
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;">
+      <span>${r.r}</span><span><span class="bdg ${r.p}">${r.pl}</span></span><span><span class="bdg ${r.i}">${r.il}</span></span>
+    </div>`).join('');
+}
+function addForn(){
+  const nome=document.getElementById('f-nome').value.trim(),grupo=document.getElementById('f-grupo').value,valor=parseFloat(document.getElementById('f-valor').value)||0;
+  if(!nome||!grupo||!valor){alert('Preencha nome, grupo e valor.');return;}
+  S.fornecedores.push({id:Date.now(),nome,grupo,valor,tipo:document.getElementById('f-tipo').value,status:document.getElementById('f-status').value,obs:document.getElementById('f-obs').value.trim()});
+  document.getElementById('f-nome').value='';document.getElementById('f-valor').value='';document.getElementById('f-obs').value='';
+  save();renderForn();renderPainel();
+}
+function delForn(id){S.fornecedores=S.fornecedores.filter(f=>f.id!==id);delete S.medicaoForn[id];save();renderForn();renderPainel();}
+const SF={'Em negociação':'warn','Assinado':'info','Em execução':'ok','Concluído':'neutral','Suspenso':'danger'};
+function renderForn(){
+  document.getElementById('forn-count').textContent=S.fornecedores.length;
+  const tb=document.getElementById('tbody-forn');
+  if(!S.fornecedores.length){tb.innerHTML='<tr><td colspan="6" class="empty">Nenhum fornecedor.</td></tr>';return;}
+  tb.innerHTML=S.fornecedores.map(f=>`<tr><td><strong>${f.nome}</strong>${f.obs?`<br><span class="td2">${f.obs}</span>`:''}</td><td class="td2">${f.grupo}</td><td class="td2">${f.tipo}</td><td><strong>${fmt(f.valor)}</strong></td><td><span class="bdg ${SF[f.status]||'neutral'}">${f.status}</span></td><td class="edit-only"><button class="btn sm danger" onclick="delForn(${f.id})">✕</button></td></tr>`).join('');
+  setMode(S.mode);
+}
+function addMat(){
+  const desc=document.getElementById('m-desc').value.trim(),valor=parseFloat(document.getElementById('m-valor').value)||0,grupo=document.getElementById('m-grupo').value;
+  if(!desc||!valor||!grupo){alert('Preencha descrição, grupo e valor.');return;}
+  S.materiais.push({id:Date.now(),desc,forn:document.getElementById('m-forn').value.trim(),valor,frete:parseFloat(document.getElementById('m-frete').value)||0,data:document.getElementById('m-data').value,grupo,status:document.getElementById('m-status').value,nf:document.getElementById('m-nf').value.trim()});
+  document.getElementById('m-desc').value='';document.getElementById('m-forn').value='';document.getElementById('m-valor').value='';document.getElementById('m-frete').value='0';document.getElementById('m-nf').value='';
+  save();renderMat();renderMatCards();renderPainel();
+}
+function delMat(id){S.materiais=S.materiais.filter(m=>m.id!==id);save();renderMat();renderMatCards();renderPainel();}
+const SM={'Pedido realizado':'warn','Pago — aguardando entrega':'info','Entregue na obra':'ok','Devolvido / cancelado':'danger'};
+function renderMat(){
+  const filtro=document.getElementById('m-filtro').value;
+  const lista=filtro?S.materiais.filter(m=>m.grupo===filtro):S.materiais;
+  const tb=document.getElementById('tbody-mat');
+  if(!lista.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhum material.</td></tr>';return;}
+  tb.innerHTML=lista.map(m=>`<tr><td><strong>${m.desc}</strong></td><td class="td2">${m.forn||'—'}</td><td class="td2">${m.grupo}</td><td class="td2">${fmtD(m.data)}</td><td class="td2">${m.nf||'—'}</td><td>${fmt(m.valor)}</td><td class="td2">${m.frete?fmt(m.frete):'—'}</td><td><strong>${fmt(m.valor+(m.frete||0))}</strong></td><td><span class="bdg ${SM[m.status]||'neutral'}">${m.status}</span></td><td class="edit-only"><button class="btn sm danger" onclick="delMat(${m.id})">✕</button></td></tr>`).join('');
+  setMode(S.mode);
+}
+function renderMatCards(){
+  const total=S.materiais.reduce((s,m)=>s+m.valor+(m.frete||0),0);
+  const entregue=S.materiais.filter(m=>m.status==='Entregue na obra').reduce((s,m)=>s+m.valor+(m.frete||0),0);
+  const aguard=S.materiais.filter(m=>['Pedido realizado','Pago — aguardando entrega'].includes(m.status)).reduce((s,m)=>s+m.valor+(m.frete||0),0);
+  document.getElementById('mat-total').textContent=fmt(total);
+  document.getElementById('mat-entregue').textContent=fmt(entregue);
+  document.getElementById('mat-aguard').textContent=fmt(aguard);
+  document.getElementById('mat-honor').textContent=fmt(total*S.pct/100);
+}
+// COTAÇÃO
+function initCotForm(){
+  S.cotFornCount=0;document.getElementById('cot-forn-inputs').innerHTML='';
+  for(let i=0;i<3;i++)addCotForn();
+}
+function addCotForn(){
+  if(S.cotFornCount>=5)return;
+  S.cotFornCount++;const n=S.cotFornCount;
+  const d=document.getElementById('cot-forn-inputs');
+  const div=document.createElement('div');
+  div.id='cf-'+n;div.style.cssText='background:var(--surface2);border-radius:var(--rs);padding:12px;margin-bottom:8px;';
+  div.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;">Fornecedor ${n}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div><label class="lbl">Nome da loja</label><input id="cf${n}-nome" placeholder="Ex: Leroy Merlin..."></div>
+      <div><label class="lbl">Preço unitário (R$)</label><input id="cf${n}-preco" type="number" placeholder="0,00" oninput="calcCotPrev(${n})"></div>
+      <div><label class="lbl">Frete total (R$)</label><input id="cf${n}-frete" type="number" placeholder="0,00" value="0" oninput="calcCotPrev(${n})"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:6px;">Total estimado (qtd×preço+frete): <strong id="cf${n}-total">—</strong></div>`;
+  d.appendChild(div);
+}
+function atualizaTotaisCot(){for(let i=1;i<=S.cotFornCount;i++)calcCotPrev(i);}
+function calcCotPrev(n){
+  const p=parseFloat(document.getElementById('cf'+n+'-preco')?.value)||0;
+  const fr=parseFloat(document.getElementById('cf'+n+'-frete')?.value)||0;
+  const q=parseFloat(document.getElementById('cot-qtd')?.value)||1;
+  const el=document.getElementById('cf'+n+'-total');
+  if(el)el.textContent=p?(fmt(p*q+fr)):'—';
+}
+function saveCotacao(){
+  const nome=document.getElementById('cot-nome').value.trim(),qtd=parseFloat(document.getElementById('cot-qtd').value)||0;
+  if(!nome||!qtd){alert('Preencha produto e quantidade.');return;}
+  const fl=[];
+  for(let i=1;i<=S.cotFornCount;i++){
+    const n=document.getElementById('cf'+i+'-nome')?.value.trim();
+    const p=parseFloat(document.getElementById('cf'+i+'-preco')?.value)||0;
+    const fr=parseFloat(document.getElementById('cf'+i+'-frete')?.value)||0;
+    if(n&&p)fl.push({nome:n,preco:p,frete:fr,total:p*qtd+fr});
+  }
+  if(!fl.length){alert('Adicione pelo menos um fornecedor.');return;}
+  S.cotacoes.push({id:Date.now(),nome,unid:document.getElementById('cot-unid').value,qtd,grupo:document.getElementById('cot-grupo').value,data:document.getElementById('cot-data').value,fornecedores:fl});
+  document.getElementById('cot-nome').value='';document.getElementById('cot-qtd').value='';
+  save();renderCotacoes();initCotForm();
+}
+function delCot(id){S.cotacoes=S.cotacoes.filter(c=>c.id!==id);save();renderCotacoes();}
+function renderCotacoes(){
+  const el=document.getElementById('cotacoes-list');
+  if(!S.cotacoes.length){el.innerHTML='<div class="empty">Nenhuma cotação. Use o formulário acima para comparar fornecedores considerando produto + frete.</div>';return;}
+  el.innerHTML=S.cotacoes.map(c=>{
+    const sorted=[...c.fornecedores].sort((a,b)=>a.total-b.total);
+    const min=sorted[0]?.total||0;
+    const econ=c.fornecedores.length>1?sorted[sorted.length-1].total-min:0;
+    const ths=c.fornecedores.map(f=>`<th style="text-align:right;background:${f.total===min?'var(--accent)':'var(--surface2)'};color:${f.total===min?'#fff':'var(--text2)'};">${f.nome}${f.total===min?' ⭐':''}</th>`).join('');
+    const rPreco=c.fornecedores.map(f=>`<td style="text-align:right;">${fmt(f.preco)}/un</td>`).join('');
+    const rFrete=c.fornecedores.map(f=>`<td style="text-align:right;">${f.frete?fmt(f.frete):'—'}</td>`).join('');
+    const rTotal=c.fornecedores.map(f=>`<td style="text-align:right;font-weight:700;${f.total===min?'color:var(--accent);':''}">${fmt(f.total)}</td>`).join('');
+    return`<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:600;">${c.nome}</span>
+        <span class="bdg neutral">${c.qtd} ${c.unid||'un'}</span>
+        ${c.grupo?`<span class="bdg neutral">${c.grupo}</span>`:''}
+        ${econ>0?`<span class="bdg ok">Economia potencial: ${fmt(econ)}</span>`:''}
+        <button class="btn sm danger edit-only" onclick="delCot(${c.id})" style="margin-left:auto;">✕</button>
+      </div>
+      <div class="tw"><table style="font-size:12px;"><thead><tr><th>Item</th>${ths}</tr></thead>
+        <tbody>
+          <tr><td>Preço unitário</td>${rPreco}</tr>
+          <tr><td>Frete</td>${rFrete}</tr>
+          <tr style="background:var(--accent-l);"><td><strong>Total real (${c.qtd}${c.unid?''+c.unid:''} × preço + frete)</strong></td>${rTotal}</tr>
+        </tbody></table></div>
+      <p style="font-size:11px;color:var(--text2);margin-top:6px;">✅ Melhor opção: <strong>${sorted[0]?.nome}</strong> — ${fmt(sorted[0]?.total)} total</p>
+    </div>`;
+  }).join('');
+  setMode(S.mode);
+}
+function addPagamento(){
+  const dest=document.getElementById('pag-dest').value.trim(),valor=parseFloat(document.getElementById('pag-valor').value)||0,data=document.getElementById('pag-data').value;
+  if(!dest||!valor||!data){alert('Preencha destinatário, valor e data.');return;}
+  S.pagamentos.push({id:Date.now(),dest,valor,data,tipo:document.getElementById('pag-tipo').value,forma:document.getElementById('pag-forma').value,ref:document.getElementById('pag-ref').value.trim()});
+  document.getElementById('pag-dest').value='';document.getElementById('pag-valor').value='';document.getElementById('pag-ref').value='';
+  save();renderPagamentos();
+}
+function delPag(id){S.pagamentos=S.pagamentos.filter(p=>p.id!==id);save();renderPagamentos();}
+function renderPagamentos(){
+  const total=S.pagamentos.filter(p=>p.tipo!=='Honorários recebidos').reduce((s,p)=>s+p.valor,0);
+  const hrec=S.pagamentos.filter(p=>p.tipo==='Honorários recebidos').reduce((s,p)=>s+p.valor,0);
+  const base=(S.fornecedores.reduce((s,f)=>s+f.valor,0)+S.materiais.reduce((s,m)=>s+m.valor+(m.frete||0),0));
+  document.getElementById('pag-total').textContent=fmt(total);
+  document.getElementById('pag-honor-rec').textContent=fmt(hrec);
+  document.getElementById('pag-a-receber').textContent=fmt(Math.max(0,base*S.pct/100-hrec));
+  const tb=document.getElementById('tbody-pag');
+  if(!S.pagamentos.length){tb.innerHTML='<tr><td colspan="7" class="empty">Nenhum pagamento.</td></tr>';return;}
+  const st={'Fornecedor serviço':'info','Material':'neutral','Honorários recebidos':'ok','Custo operacional':'warn','Outros':'neutral'};
+  tb.innerHTML=[...S.pagamentos].reverse().map(p=>`<tr><td class="td2" style="font-family:'DM Mono',monospace;">${fmtD(p.data)}</td><td><strong>${p.dest}</strong></td><td><span class="bdg ${st[p.tipo]||'neutral'}">${p.tipo}</span></td><td class="td2">${p.forma}</td><td><strong>${fmt(p.valor)}</strong></td><td class="td2">${p.ref||'—'}</td><td class="edit-only"><button class="btn sm danger" onclick="delPag(${p.id})">✕</button></td></tr>`).join('');
+  setMode(S.mode);
+}
+function addFC(){
+  const desc=document.getElementById('fc-desc').value.trim(),valor=parseFloat(document.getElementById('fc-valor').value)||0,data=document.getElementById('fc-data').value;
+  if(!desc||!valor||!data){alert('Preencha todos os campos.');return;}
+  S.fluxoCaixa.push({id:Date.now(),desc,tipo:document.getElementById('fc-tipo').value,valor,data});
+  document.getElementById('fc-desc').value='';document.getElementById('fc-valor').value='';
+  save();renderFC();
+}
+function delFC(id){S.fluxoCaixa=S.fluxoCaixa.filter(f=>f.id!==id);save();renderFC();}
+function renderFC(){
+  const ent=S.fluxoCaixa.filter(f=>f.tipo==='entrada').reduce((s,f)=>s+f.valor,0);
+  const sai=S.fluxoCaixa.filter(f=>f.tipo==='saida').reduce((s,f)=>s+f.valor,0);
+  const saldo=ent-sai;
+  document.getElementById('fc-entradas').textContent=fmt(ent);
+  document.getElementById('fc-saidas').textContent=fmt(sai);
+  const sel=document.getElementById('fc-saldo');sel.textContent=fmt(saldo);sel.style.color=saldo>=0?'var(--accent)':'var(--danger)';
+  const tb=document.getElementById('tbody-fc');
+  if(!S.fluxoCaixa.length){tb.innerHTML='<tr><td colspan="5" class="empty">Nenhum lançamento.</td></tr>';return;}
+  tb.innerHTML=[...S.fluxoCaixa].sort((a,b)=>b.data.localeCompare(a.data)).map(f=>`<tr><td class="td2" style="font-family:'DM Mono',monospace;">${fmtD(f.data)}</td><td>${f.desc}</td><td><span class="bdg ${f.tipo==='entrada'?'ok':'danger'}">${f.tipo==='entrada'?'Entrada':'Saída'}</span></td><td style="font-weight:600;color:${f.tipo==='entrada'?'var(--accent)':'var(--danger)'};">${fmt(f.valor)}</td><td class="edit-only"><button class="btn sm danger" onclick="delFC(${f.id})">✕</button></td></tr>`).join('');
+  setMode(S.mode);
+}
+function renderMedicao(){renderMedForn();renderMedMat();updateMedResumo();}
+function renderMedForn(){
+  const w=document.getElementById('med-forn-wrap');
+  if(!S.fornecedores.length){w.innerHTML='<div class="empty">Cadastre fornecedores.</div>';return;}
+  w.innerHTML=`<div style="display:grid;grid-template-columns:2fr 1fr 1fr 90px 90px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text2);"><span>Fornecedor</span><span>Contrato</span><span>% executado</span><span style="text-align:right;">Medido</span><span style="text-align:right;">Honor.</span></div>`+
+  S.fornecedores.map(f=>{const mv=S.medicaoForn[f.id]||0;
+    return`<div style="display:grid;grid-template-columns:2fr 1fr 1fr 90px 90px;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;">
+      <span><strong>${f.nome}</strong><br><span class="td2">${f.grupo}</span></span><span>${fmt(f.valor)}</span>
+      <span><div class="rw"><input type="range" min="0" max="100" step="5" value="${mv}" ${S.mode==='view'?'disabled':''} oninput="updMF(${f.id},+this.value)"><span class="rv" id="fp-${f.id}">${mv}%</span></div></span>
+      <span style="text-align:right;font-weight:500;" id="fv-${f.id}">${fmt(f.valor*mv/100)}</span>
+      <span style="text-align:right;" class="td2" id="fh-${f.id}">${fmt(f.valor*mv/100*S.pct/100)}</span>
+    </div>`;}).join('');
+}
+function updMF(id,v){
+  S.medicaoForn[id]=v;const f=S.fornecedores.find(x=>x.id===id);const med=f.valor*v/100;
+  document.getElementById('fp-'+id).textContent=v+'%';document.getElementById('fv-'+id).textContent=fmt(med);document.getElementById('fh-'+id).textContent=fmt(med*S.pct/100);
+  save();updateMedResumo();
+}
+function renderMedMat(){
+  const mes=document.getElementById('med-mes').value,w=document.getElementById('med-mat-wrap');
+  const lista=S.materiais.filter(m=>m.data&&m.data.startsWith(mes));
+  if(!lista.length){w.innerHTML=`<div class="empty">Nenhum material em ${mes||'este mês'}.</div>`;updateMedResumo();return;}
+  w.innerHTML=`<div style="display:grid;grid-template-columns:2fr 1fr 1fr 90px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text2);"><span>Material</span><span>Grupo</span><span style="text-align:right;">Total c/ frete</span><span style="text-align:right;">Honor.</span></div>`+
+  lista.map(m=>`<div style="display:grid;grid-template-columns:2fr 1fr 1fr 90px;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;"><span><strong>${m.desc}</strong><br><span class="td2">${m.forn||''}</span></span><span class="td2">${m.grupo}</span><span style="text-align:right;font-weight:500;">${fmt(m.valor+(m.frete||0))}</span><span style="text-align:right;" class="td2">${fmt((m.valor+(m.frete||0))*S.pct/100)}</span></div>`).join('');
+  updateMedResumo();
+}
+function updateMedResumo(){
+  const mes=document.getElementById('med-mes')?.value||'';
+  const ts=S.fornecedores.reduce((s,f)=>s+f.valor*(S.medicaoForn[f.id]||0)/100,0);
+  const tm=S.materiais.filter(m=>m.data&&m.data.startsWith(mes)).reduce((s,m)=>s+m.valor+(m.frete||0),0);
+  const base=ts+tm,honor=base*S.pct/100;
+  document.getElementById('rs-serv').textContent=fmt(ts);document.getElementById('rs-mat').textContent=fmt(tm);
+  document.getElementById('rs-base').textContent=fmt(base);document.getElementById('rs-honor').textContent=fmt(honor);document.getElementById('rs-total').textContent=fmt(base+honor);
+}
+function gerarRelatorio(){
+  const mes=document.getElementById('med-mes').value,data=document.getElementById('med-data').value;
+  if(!data){alert('Selecione a data da medição.');return;}
+  const[y,m,d]=data.split('-'),mesLabel=new Date(mes+'-02').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const ts=S.fornecedores.reduce((s,f)=>s+f.valor*(S.medicaoForn[f.id]||0)/100,0);
+  const matDoMes=S.materiais.filter(m=>m.data&&m.data.startsWith(mes));
+  const tm=matDoMes.reduce((s,m)=>s+m.valor+(m.frete||0),0);
+  const base=ts+tm,honor=base*S.pct/100,grand=base+honor;
+  const lF=S.fornecedores.length?S.fornecedores.map(f=>{const p=S.medicaoForn[f.id]||0,med=f.valor*p/100;return`<tr><td>${f.nome}</td><td>${f.grupo}</td><td>${fmt(f.valor)}</td><td style="text-align:center;"><span class="bdg ${p<100?'warn':'ok'}">${p}%</span></td><td style="text-align:right;">${fmt(med)}</td><td style="text-align:right;">${fmt(med*S.pct/100)}</td></tr>`;}).join(''):'<tr><td colspan="6" style="color:var(--text3)">Nenhum fornecedor.</td></tr>';
+  const lM=matDoMes.length?matDoMes.map(m=>`<tr><td>${m.desc}</td><td>${m.forn||'—'}</td><td>${m.grupo}</td><td>${fmtD(m.data)}${m.nf?' · NF '+m.nf:''}</td><td style="text-align:right;">${fmt(m.valor)}</td><td style="text-align:right;">${m.frete?fmt(m.frete):'—'}</td><td style="text-align:right;font-weight:600;">${fmt(m.valor+(m.frete||0))}</td><td style="text-align:right;">${fmt((m.valor+(m.frete||0))*S.pct/100)}</td></tr>`).join(''):'<tr><td colspan="8" style="color:var(--text3)">Nenhum material no mês.</td></tr>';
+  document.getElementById('rel-content').innerHTML=`
+    <h2 style="font-size:18px;font-weight:300;margin-bottom:4px;">Relatório de Medição — ${mesLabel}</h2>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:4px;">Medição: ${d}/${m}/${y} · Vencimento: 15/${m}/${y}${S.config.cliente?' · Cliente: '+S.config.cliente:''}</p>
+    ${S.config.arq?`<p style="font-size:12px;color:var(--text2);margin-bottom:16px;">Responsável: ${S.config.arq}${S.config.cau?' · CAU: '+S.config.cau:''}</p>`:''}
+    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+    <h3 style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin:14px 0 8px;">Serviços / empreitada</h3>
+    <table><thead><tr><th>Fornecedor</th><th>Grupo</th><th>Contrato</th><th style="text-align:center;">Exec.</th><th style="text-align:right;">Medido</th><th style="text-align:right;">Honor. ${S.pct}%</th></tr></thead><tbody>${lF}</tbody>
+    <tfoot><tr style="font-weight:600;border-top:1px solid var(--border2);"><td colspan="4">Subtotal serviços</td><td style="text-align:right;">${fmt(ts)}</td><td style="text-align:right;">${fmt(ts*S.pct/100)}</td></tr></tfoot></table>
+    <h3 style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin:14px 0 8px;">Materiais comprados no mês</h3>
+    <table><thead><tr><th>Material</th><th>Fornecedor</th><th>Grupo</th><th>Data/NF</th><th style="text-align:right;">Produto</th><th style="text-align:right;">Frete</th><th style="text-align:right;">Total</th><th style="text-align:right;">Honor. ${S.pct}%</th></tr></thead><tbody>${lM}</tbody>
+    <tfoot><tr style="font-weight:600;border-top:1px solid var(--border2);"><td colspan="6">Subtotal materiais</td><td style="text-align:right;">${fmt(tm)}</td><td style="text-align:right;">${fmt(tm*S.pct/100)}</td></tr></tfoot></table>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <h3 style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin:0 0 8px;">Resumo para pagamento</h3>
+    <table><tbody><tr><td>Serviços medidos</td><td style="text-align:right;">${fmt(ts)}</td></tr><tr><td>Materiais (produto + frete)</td><td style="text-align:right;">${fmt(tm)}</td></tr><tr><td>Base de honorários</td><td style="text-align:right;">${fmt(base)}</td></tr><tr><td>Honorários de gestão (${S.pct}%)</td><td style="text-align:right;">${fmt(honor)}</td></tr>
+    <tr style="font-weight:700;font-size:14px;border-top:1px solid var(--border2);"><td>Total a pagar até 15/${m}/${y}</td><td style="text-align:right;color:var(--accent);">${fmt(grand)}</td></tr></tbody></table>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <p style="font-size:11px;color:var(--text3);">Honorários calculados sobre serviços executados + materiais adquiridos no período (produto + frete). Fornecedores com execução abaixo de 100% têm pagamento proporcional.</p>`;
+  go('relatorio');
+}
+function addCusto(){
+  const valor=parseFloat(document.getElementById('cu-valor').value)||0,data=document.getElementById('cu-data').value;
+  if(!valor||!data){alert('Preencha valor e data.');return;}
+  S.custos.push({id:Date.now(),cat:document.getElementById('cu-cat').value,valor,data,horas:parseFloat(document.getElementById('cu-horas').value)||0,desc:document.getElementById('cu-desc').value.trim()});
+  document.getElementById('cu-valor').value='';document.getElementById('cu-horas').value='';document.getElementById('cu-desc').value='';
+  save();calcRent();
+}
+function delCusto(id){S.custos=S.custos.filter(c=>c.id!==id);save();calcRent();}
+function calcRent(){
+  const hv=parseFloat(document.getElementById('hora-valor')?.value)||S.horaValor||0;
+  S.horaValor=hv;save();
+  const tc=S.custos.reduce((s,c)=>s+c.valor,0),th=S.custos.reduce((s,c)=>s+c.horas,0),ct=th*hv,cr=tc+ct;
+  document.getElementById('cu-total').textContent=fmt(tc);document.getElementById('cu-horas-total').textContent=th.toFixed(1)+'h';document.getElementById('cu-tempo-val').textContent=fmt(ct);document.getElementById('cu-real').textContent=fmt(cr);
+  const base=(S.fornecedores.reduce((s,f)=>s+f.valor,0)+S.materiais.reduce((s,m)=>s+m.valor+(m.frete||0),0));
+  const honor=base*S.pct/100,lucro=honor-cr;
+  document.getElementById('rent-box').innerHTML=`
+    <div class="mg" style="margin-bottom:12px;">
+      <div class="mc"><div class="ml">Honorários totais</div><div class="mv">${fmt(honor)}</div><div class="ms">${S.pct}% sobre base</div></div>
+      <div class="mc"><div class="ml">Custos operacionais</div><div class="mv">${fmt(tc)}</div></div>
+      <div class="mc"><div class="ml">Custo do tempo</div><div class="mv">${fmt(ct)}</div><div class="ms">${th.toFixed(1)}h × R$${hv}/h</div></div>
+      <div class="mc"><div class="ml">Resultado líquido</div><div class="mv ${lucro>=0?'rent-ok':'rent-bad'}">${fmt(lucro)}</div></div>
+    </div>
+    <div style="font-size:13px;padding:12px;background:${lucro>=0?'var(--accent-l)':'var(--danger-l)'};border-radius:var(--rs);">
+      ${lucro>=0?`✅ Você está no <strong>positivo</strong>. Margem de ${honor?Math.round(lucro/honor*100):0}% sobre os honorários.`:`⚠️ Você está no <strong>prejuízo</strong>. Seus custos superam os honorários em ${fmt(Math.abs(lucro))}. Considere revisar o percentual ou otimizar deslocamentos.`}
+    </div>`;
+  const tb=document.getElementById('tbody-cu');
+  if(!S.custos.length){tb.innerHTML='<tr><td colspan="6" class="empty">Nenhum custo registrado.</td></tr>';return;}
+  tb.innerHTML=[...S.custos].reverse().map(c=>`<tr><td class="td2" style="font-family:'DM Mono',monospace;">${fmtD(c.data)}</td><td><span class="bdg neutral">${c.cat}</span></td><td>${c.desc||'—'}</td><td class="td2">${c.horas?c.horas+'h':'—'}</td><td><strong>${fmt(c.valor)}</strong></td><td class="edit-only"><button class="btn sm danger" onclick="delCusto(${c.id})">✕</button></td></tr>`).join('');
+  setMode(S.mode);
+}
+function addDiario(){
+  const txt=document.getElementById('d-txt').value.trim();if(!txt){alert('Escreva o registro.');return;}
+  S.diario.unshift({id:Date.now(),data:document.getElementById('d-data').value,fase:document.getElementById('d-fase').value.trim(),clima:document.getElementById('d-clima').value,txt});
+  document.getElementById('d-txt').value='';save();renderDiario();
+}
+function delDiario(id){S.diario=S.diario.filter(d=>d.id!==id);save();renderDiario();}
+function renderDiario(){
+  const el=document.getElementById('diario-list');
+  if(!S.diario.length){el.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:40px;" class="empty">Nenhum registro ainda.</div>';return;}
+  el.innerHTML=S.diario.map(d=>`<div class="de"><div style="display:flex;align-items:center;justify-content:space-between;"><div class="de-d">${fmtD(d.data)} ${d.clima||''}</div><button class="btn sm danger edit-only" onclick="delDiario(${d.id})">✕</button></div><div class="de-t">${d.txt}</div>${d.fase?`<div class="de-tags"><span class="bdg neutral">${d.fase}</span></div>`:''}</div>`).join('');
+  setMode(S.mode);
+}
+function addFotos(e){
+  const files=Array.from(e.target.files),grupo=document.getElementById('foto-grupo').value,data=document.getElementById('foto-data').value,leg=document.getElementById('foto-leg').value.trim();
+  if(!grupo){alert('Selecione a etapa.');return;}
+  let done=0;
+  files.forEach(file=>{const r=new FileReader();r.onload=ev=>{S.fotos.push({id:Date.now()+Math.random(),grupo,data,leg,src:ev.target.result,nome:file.name});done++;if(done===files.length){save();renderFotos();}};r.readAsDataURL(file);});
+  document.getElementById('foto-leg').value='';e.target.value='';
+}
+function delFoto(id){S.fotos=S.fotos.filter(f=>f.id!==id);save();renderFotos();}
+function renderFotos(){
+  const filtro=document.getElementById('foto-filtro').value,lista=filtro?S.fotos.filter(f=>f.grupo===filtro):S.fotos;
+  document.getElementById('foto-count').textContent=lista.length+' foto'+(lista.length!==1?'s':'');
+  const g=document.getElementById('foto-grid');
+  if(!lista.length){g.innerHTML='<div class="empty" style="grid-column:1/-1;">Nenhuma foto.</div>';return;}
+  g.innerHTML=lista.map(f=>`<div style="position:relative;"><div class="foto-item" title="${f.leg||f.nome}"><img src="${f.src}" alt="${f.leg||f.nome}" loading="lazy"></div><div style="font-size:10px;color:var(--text2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.leg||f.nome}</div><div style="font-size:10px;color:var(--text3);">${f.grupo} · ${fmtD(f.data)}</div><button class="btn sm danger edit-only" onclick="delFoto(${f.id})" style="position:absolute;top:4px;right:4px;padding:2px 6px;font-size:10px;">✕</button></div>`).join('');
+  setMode(S.mode);
+}
+function addVisita(){
+  const data=document.getElementById('vis-data').value;if(!data){alert('Selecione a data.');return;}
+  S.visitas.push({id:Date.now(),data,hora:document.getElementById('vis-hora').value,tipo:document.getElementById('vis-tipo').value,part:document.getElementById('vis-part').value.trim(),local:document.getElementById('vis-local').value.trim(),pauta:document.getElementById('vis-pauta').value.trim(),realizada:false});
+  document.getElementById('vis-pauta').value='';document.getElementById('vis-part').value='';
+  save();renderVisitas();
+}
+function toggleVisita(id,v){const vis=S.visitas.find(x=>x.id===id);if(vis)vis.realizada=v;save();renderVisitas();}
+function delVisita(id){S.visitas=S.visitas.filter(v=>v.id!==id);save();renderVisitas();}
+function renderVisitas(){
+  const el=document.getElementById('visitas-list');
+  if(!S.visitas.length){el.innerHTML='<div class="empty">Nenhuma visita agendada.</div>';return;}
+  el.innerHTML=[...S.visitas].sort((a,b)=>a.data.localeCompare(b.data)).map(v=>`<div class="ph-row"><input type="checkbox" ${v.realizada?'checked':''} onchange="toggleVisita(${v.id},this.checked)" style="flex-shrink:0;margin-top:4px;accent-color:var(--accent);"><div class="ph-info" style="${v.realizada?'opacity:.5;':''}" ><div class="ph-n">${fmtD(v.data)} ${v.hora?'às '+v.hora:''} — ${v.tipo}</div>${v.local?`<div class="ph-s">📍 ${v.local}</div>`:''}${v.part?`<div class="ph-s">👥 ${v.part}</div>`:''}${v.pauta?`<div class="ph-s" style="margin-top:4px;">${v.pauta}</div>`:''}</div><span class="bdg ${v.realizada?'ok':'info'}">${v.realizada?'Realizada':'Agendada'}</span><button class="btn sm danger edit-only" onclick="delVisita(${v.id})" style="margin-left:6px;">✕</button></div>`).join('');
+  setMode(S.mode);
+}
+const CORES_AV=['#2B5741','#1A4FBF','#A85500','#5B21B6','#0D7377','#B91C1C'];
+function addContato(){
+  const nome=document.getElementById('con-nome').value.trim();if(!nome){alert('Preencha o nome.');return;}
+  S.contatos.push({id:Date.now(),nome,papel:document.getElementById('con-papel').value,empresa:document.getElementById('con-empresa').value.trim(),tel:document.getElementById('con-tel').value.trim(),email:document.getElementById('con-email').value.trim(),esp:document.getElementById('con-esp').value.trim()});
+  document.getElementById('con-nome').value='';document.getElementById('con-empresa').value='';document.getElementById('con-tel').value='';document.getElementById('con-email').value='';document.getElementById('con-esp').value='';
+  save();renderContatos();
+}
+function delContato(id){S.contatos=S.contatos.filter(c=>c.id!==id);save();renderContatos();}
+function renderContatos(){
+  document.getElementById('con-count').textContent=S.contatos.length;
+  const el=document.getElementById('contatos-list');
+  if(!S.contatos.length){el.innerHTML='<div class="empty">Nenhum contato.</div>';return;}
+  el.innerHTML=S.contatos.map((c,i)=>{const ini=c.nome.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),cor=CORES_AV[i%CORES_AV.length];
+    return`<div class="contato-card"><div style="display:flex;align-items:flex-start;gap:12px;"><div class="contato-avatar" style="background:${cor}20;color:${cor};">${ini}</div><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:13px;font-weight:600;">${c.nome}</span><span class="bdg neutral">${c.papel}</span>${c.esp?`<span class="bdg teal">${c.esp}</span>`:''}</div>${c.empresa?`<div style="font-size:12px;color:var(--text2);margin-top:2px;">${c.empresa}</div>`:''}<div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap;">${c.tel?`<a href="tel:${c.tel}" style="font-size:12px;color:var(--info);text-decoration:none;">📞 ${c.tel}</a>`:''} ${c.email?`<a href="mailto:${c.email}" style="font-size:12px;color:var(--info);text-decoration:none;">✉️ ${c.email}</a>`:''}</div></div><button class="btn sm danger edit-only" onclick="delContato(${c.id})">✕</button></div></div>`;}).join('');
+  setMode(S.mode);
+}
+function renderTimeline(){
+  const el=document.getElementById('timeline-list');
+  const ev=[];
+  S.diario.forEach(d=>ev.push({data:d.data,titulo:'Registro de obra',desc:d.txt.slice(0,90)+(d.txt.length>90?'...':''),tipo:'diario',tag:d.fase||''}));
+  S.visitas.filter(v=>v.realizada).forEach(v=>ev.push({data:v.data,titulo:v.tipo,desc:v.pauta||'',tipo:'visita',tag:''}));
+  S.pagamentos.forEach(p=>ev.push({data:p.data,titulo:'Pagamento: '+p.dest,desc:fmt(p.valor),tipo:'pagamento',tag:p.tipo}));
+  ev.sort((a,b)=>b.data.localeCompare(a.data));
+  if(!ev.length){el.innerHTML='<div class="empty">Registros do diário, visitas realizadas e pagamentos aparecem aqui na linha do tempo.</div>';return;}
+  const cores={diario:'#2B5741',visita:'#1A4FBF',pagamento:'#A85500'};
+  el.innerHTML=ev.map((e,i)=>`<div class="timeline-item"><div class="tl-left"><div class="tl-dot" style="background:${cores[e.tipo]||'#888'};"></div>${i<ev.length-1?'<div class="tl-line"></div>':''}</div><div class="tl-content"><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;"><div class="tl-title">${e.titulo}</div>${e.tag?`<span class="bdg neutral">${e.tag}</span>`:''}</div><div class="tl-date">${fmtD(e.data)}</div>${e.desc?`<div class="tl-desc">${e.desc}</div>`:''}</div></div>`).join('');
+}
+function addVistoria(){
+  const amb=document.getElementById('vi-amb').value.trim(),item=document.getElementById('vi-item').value.trim();
+  if(!amb||!item){alert('Preencha ambiente e item.');return;}
+  S.vistoria.push({id:Date.now(),amb,item,resp:document.getElementById('vi-resp').value,obs:document.getElementById('vi-obs').value.trim(),status:'Pendente'});
+  document.getElementById('vi-amb').value='';document.getElementById('vi-item').value='';document.getElementById('vi-obs').value='';
+  save();renderVistoria();
+}
+function setVSt(id,s){const v=S.vistoria.find(x=>x.id===id);if(v)v.status=s;save();renderVistoria();}
+function delVI(id){S.vistoria=S.vistoria.filter(v=>v.id!==id);save();renderVistoria();}
+function renderVistoria(){
+  document.getElementById('vis-total').textContent=S.vistoria.length;
+  document.getElementById('vis-pend').textContent=S.vistoria.filter(v=>v.status==='Pendente').length;
+  document.getElementById('vis-res').textContent=S.vistoria.filter(v=>v.status==='Resolvido').length;
+  document.getElementById('vis-apr').textContent=S.vistoria.filter(v=>v.status==='Aprovado').length;
+  const el=document.getElementById('vistoria-list');
+  if(!S.vistoria.length){el.innerHTML='<div class="empty">Nenhum item de vistoria.</div>';return;}
+  const sc={Pendente:'danger',Resolvido:'warn',Aprovado:'ok'};
+  el.innerHTML=S.vistoria.map(v=>`<div class="vistoria-item"><div style="flex:1;"><div style="font-size:13px;font-weight:500;">${v.amb} — ${v.item}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">Resp: ${v.resp}${v.obs?' · '+v.obs:''}</div></div><div style="display:flex;gap:5px;align-items:center;flex-shrink:0;"><span class="bdg ${sc[v.status]||'neutral'}">${v.status}</span><select class="edit-only" style="width:auto;font-size:11px;padding:3px 6px;" onchange="setVSt(${v.id},this.value)"><option ${v.status==='Pendente'?'selected':''}>Pendente</option><option ${v.status==='Resolvido'?'selected':''}>Resolvido</option><option ${v.status==='Aprovado'?'selected':''}>Aprovado</option></select><button class="btn sm danger edit-only" onclick="delVI(${v.id})">✕</button></div></div>`).join('');
+  setMode(S.mode);
+}
+// INIT
+load();
+const t=today();
+['d-data','med-data','pag-data','fc-data','cu-data','cot-data','vis-data','foto-data','pr-data','t-prazo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
+document.getElementById('med-mes').value=t.slice(0,7);
+document.getElementById('pct-range').value=S.pct;
+document.getElementById('pct-val').textContent=S.pct+'%';
+document.getElementById('pct-big').textContent=S.pct+'%';
+if(S.horaValor){const hv=document.getElementById('hora-valor');if(hv)hv.value=S.horaValor;}
+if(S.config){['nome','end','cliente','email','inicio','fim','arq','cau'].forEach(k=>{const el=document.getElementById('cfg-'+k);if(el)el.value=S.config[k]||'';});document.getElementById('sb-nome').textContent=S.config.nome||'Gestão de Obra Pro';document.getElementById('sb-sub').textContent=S.config.cliente||'Retrofit Sobrado';}
+filtroT('todas');
+renderEscopo();renderDocs();renderRiscos();renderForn();renderMat();renderMatCards();
+renderDiario();renderFotos();renderContatos();renderVistoria();renderVisitas();
+renderTarefas('todas');renderPranchas();renderCotacoes();renderPagamentos();renderFC();
+renderPainel();initCotForm();renderCronograma();
+setMode(S.mode);
+</script>
+</body>
+</html>
